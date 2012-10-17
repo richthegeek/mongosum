@@ -9,4 +9,4 @@ coll = db.collection 'test'
 # coll.insert {a: 'george', b: 10}
 # coll.insert {a: 'bob', b: 15}
 
-coll.update {a: 'george'}, {a: 'george', b: 50}
+coll.update {a: 'george'}, {a: 'george', b: 60}
