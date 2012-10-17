@@ -57,6 +57,8 @@
     var _this = this;
     if (schema_change_count > 0) {
       return this.getSchema(function(err, full_schema) {
+        console.log('SAVE');
+        console.log(schema);
         full_schema = merge_schema(full_schema, schema, {
           sum: function(a, b) {
             return {
@@ -64,6 +66,8 @@
             };
           }
         });
+        console.log(full_schema);
+        throw 'NO MORE';
         return _this.setSchema(full_schema, function() {
           return callback && callback(err, data);
         });
