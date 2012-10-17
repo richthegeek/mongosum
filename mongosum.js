@@ -69,15 +69,15 @@
       throw 'MongoSum cannot get the summary of the summarys collection.';
     }
     criteria = {
-      _id: this.name
+      _collection: this.name
     };
     return this.db.summary.find(criteria).next(function(err, summary) {
       var _ref, _ref1;
       if (summary == null) {
         summary = {};
       }
-      if ((_ref = summary._id) == null) {
-        summary._id = _this.name;
+      if ((_ref = summary._collection) == null) {
+        summary._collection = _this.name;
       }
       if ((_ref1 = summary._options) == null) {
         summary._options = _this.defaultSummaryOptions();
@@ -98,9 +98,9 @@
       throw 'MongoSum cannot set the summary of the summarys collection';
     }
     criteria = {
-      _id: this.name
+      _collection: this.name
     };
-    summary._id = this.name;
+    summary._collection = this.name;
     return this.db.summary.update(criteria, summary, true, callback);
   };
 
@@ -148,7 +148,7 @@
 
   Collection.prototype.drop = function() {
     this.db.summary.remove({
-      _id: this.name
+      _collection: this.name
     });
     return this._drop.apply(this, arguments);
   };
