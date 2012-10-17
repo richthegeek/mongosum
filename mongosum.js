@@ -123,6 +123,7 @@
     return walk_objects(left, right, function(key, vals, types) {
       if (!vals[0] && vals[1]) {
         vals[0] = vals[1];
+        vals[0].sum = 0;
       }
       if ((vals[0] != null) && vals[0].type) {
         if (vals[0].type === 'Number') {
