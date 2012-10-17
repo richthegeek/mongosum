@@ -395,7 +395,7 @@
     }
     for (_j = 0, _len1 = ignore.length; _j < _len1; _j++) {
       key = ignore[_j];
-      if (first[key]) {
+      if (first && first[key]) {
         delete first[key];
       }
     }
