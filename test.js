@@ -10,9 +10,11 @@
 
   coll = db.collection('test');
 
-  coll.insert({
-    a: 'bob',
-    b: 15
+  coll.update({
+    a: 'george'
+  }, {
+    a: 'george',
+    b: 50
   });
 
 }).call(this);
