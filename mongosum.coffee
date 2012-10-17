@@ -45,9 +45,9 @@ Collection.prototype.getSummary = (callback) ->
 	if @name is collection_name
 		throw 'MongoSum cannot get the summary of the summarys collection.'
 
-	criteria = _collection: @name
+	criteria = _id: @name
 	@db.summary.find(criteria).next (err, summary = {}) =>
-		summary._collection ?= @name
+		summary._id ?= @name
 		summary._options ?= @defaultSummaryOptions()
 		@_summaryOptions = summary._options
 		callback err, summary
@@ -59,8 +59,8 @@ Collection.prototype.setSummary = (summary, callback) ->
 	if @name is collection_name
 		throw 'MongoSum cannot set the summary of the summarys collection'
 
-	criteria = _collection: @name
-	summary._collection = @name
+	criteria = _id: @name
+	summary._id = @name
 	@db.summary.update criteria, summary, true, callback
 
 ###
@@ -88,7 +88,7 @@ Collection.prototype._merge_summarys = (err, data, callback, options, summary, s
 
 Collection.prototype._drop = Collection.prototype.drop
 Collection.prototype.drop = () ->
-	@db.summary.remove _collection: @name
+	@db.summary.remove _id: @name
 	@_drop.apply this, arguments
 
 Collection.prototype._insert = Collection.prototype.insert
