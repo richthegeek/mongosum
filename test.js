@@ -18,11 +18,11 @@
       a: 'alice',
       b: 42
     }
-  ]);
-
-  coll.insert({
-    a: 'george',
-    b: 60
+  ], function() {
+    return coll.insert({
+      a: 'george',
+      b: 60
+    });
   });
 
 }).call(this);
