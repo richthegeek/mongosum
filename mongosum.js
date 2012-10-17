@@ -121,10 +121,10 @@
     _ref = [{}, 0], schema = _ref[0], schema_change_count = _ref[1];
     subtract_schema = function(err, data) {
       if (!err && data) {
-        return merge_schema(schema, get_schema(data), {
+        merge_schema(schema, get_schema(data), {
           sum: function(a, b) {
             console.log('neg sum', a, b);
-            return a - b;
+            return (b === null && -a) || (a - b);
           },
           min: function(a, b) {
             if (a <= b) {
@@ -141,6 +141,7 @@
             }
           }
         });
+        return console.log('done', schema);
       }
     };
     update_schema = function(err, data) {
