@@ -153,6 +153,7 @@
     };
     merge_opts = {
       min: function(a, b) {
+        console.log('Full min', a, b);
         return (b && b <= a ? 0 : Math.min(a, b));
       },
       max: function(a, b) {
