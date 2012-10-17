@@ -47,7 +47,8 @@
       return callback && callback(err, data);
     };
     update_schema = function(data) {
-      return console.log('INSERTED', data);
+      console.log('INSERTED', data);
+      return console.log('SCHEMA:', schema);
     };
     return this.getSchema(function(err, schema) {
       var complete, obj, _i, _len, _results;

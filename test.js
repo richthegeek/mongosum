@@ -10,16 +10,14 @@
 
   coll = db.collection('test');
 
-  setTimeout(function() {
-    return coll.insert([
-      {
-        a: 'bob',
-        b: 12
-      }, {
-        a: 'alice',
-        b: 42
-      }
-    ]);
-  }, 500);
+  coll.insert([
+    {
+      a: 'bob',
+      b: 12
+    }, {
+      a: 'alice',
+      b: 42
+    }
+  ]);
 
 }).call(this);
