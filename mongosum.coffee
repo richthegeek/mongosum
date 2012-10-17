@@ -32,6 +32,7 @@ Collection.prototype.setSchema = (schema, callback) ->
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
+	console.log 'insert'
 	if @name is 'schemas'
 		return
 
@@ -68,6 +69,7 @@ Collection.prototype.insert = (object, callback) ->
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
+	console.log 'update'
 	if not callback and typeof multi is 'function'
 		callback = multi
 		multi = false

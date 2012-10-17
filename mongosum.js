@@ -56,6 +56,7 @@
   Collection.prototype.insert = function(object, callback) {
     var cb, complete, obj, schema, schema_change_count, update_schema, _i, _len, _results,
       _this = this;
+    console.log('insert');
     if (this.name === 'schemas') {
       return;
     }
@@ -105,6 +106,7 @@
   Collection.prototype._update = Collection.prototype.update;
 
   Collection.prototype.update = function(criteria, object, upsert, multi, callback) {
+    console.log('update');
     if (!callback && typeof multi === 'function') {
       callback = multi;
       multi = false;
