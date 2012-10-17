@@ -47,7 +47,7 @@
         obj = object[_i];
         _results.push(this.insert(obj, function(err, data) {
           complete++;
-          if (complete === count) {
+          if (complete === object.length) {
             return callback && callback.apply(this, arguments);
           }
         }));

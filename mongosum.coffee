@@ -27,7 +27,7 @@ Collection.prototype.insert = (object, callback) ->
 		for obj in object
 			@insert obj, (err, data) ->
 				complete++
-				if complete is count
+				if complete is object.length
 					callback and callback.apply this, arguments
 	else
 		@_insert object, (err, data) ->
