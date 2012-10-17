@@ -2,17 +2,19 @@ Server = require 'mongolian'
 DB = require 'mongolian/lib/db.js'
 Collection = require 'mongolian/lib/collection.js'
 
+collection_name = 'schemas'
+
 Server.prototype.db = (name) ->
 	if not @_dbs[name]?
 		@_dbs[name] = new DB @, name
-		@_dbs[name].schema = new Collection @_dbs[name], 'schemas'
+		@_dbs[name].schema = new Collection @_dbs[name], collection_name
 	return @_dbs[name]
 
 DB.prototype.collection = (name) ->
 	return @_collections[name] or (@_collections[name] = new Collection @, name)
 
 Collection.prototype.getSchema = (callback) ->
-	if @name is 'schemas'
+	if @name is collection_name
 		throw 'MongoSum cannot get the schema of the schemas collection.'
 
 	criteria = _collection: @name
@@ -23,7 +25,7 @@ Collection.prototype.getSchema = (callback) ->
 		callback err, schema
 
 Collection.prototype.setSchema = (schema, callback) ->
-	if @name is 'schemas'
+	if @name is collection_name
 		throw 'MongoSum cannot set the schema of the schemas collection'
 
 	criteria = _collection: @name
@@ -33,7 +35,7 @@ Collection.prototype.setSchema = (schema, callback) ->
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
 	console.log 'insert'
-	if @name is 'schemas'
+	if @name is collection_name
 		return Collection.prototype._insert.apply this, arguments
 
 	cb = (err, data, schema) =>
@@ -69,7 +71,7 @@ Collection.prototype.insert = (object, callback) ->
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
-	if @name is 'schemas'
+	if @name is collection_name
 		return Collection.prototype._update.apply this, arguments
 
 	console.log 'update'
