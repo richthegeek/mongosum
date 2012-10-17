@@ -38,7 +38,7 @@
     return this._collections[name] || (this._collections[name] = new Collection(this, name));
   };
 
-  Collection.prototype.getSummaryOptions = function(options, callback) {
+  Collection.prototype.getSummaryOptions = function(callback) {
     var _this = this;
     if (!this._summaryOptions) {
       return this.getSummary(function(err, summary) {

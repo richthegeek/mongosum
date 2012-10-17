@@ -26,7 +26,7 @@ DB.prototype.collection = (name) ->
 	return @_collections[name] or (@_collections[name] = new Collection @, name)
 
 
-Collection.prototype.getSummaryOptions = (options, callback) ->
+Collection.prototype.getSummaryOptions = (callback) ->
 	if not @_summaryOptions
 		@getSummary (err, summary) =>
 			callback @_summaryOptions = summary._options
