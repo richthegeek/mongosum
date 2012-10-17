@@ -42,6 +42,7 @@ Collection.prototype.updateSchema = (callback) ->
 	schema = {}
 	each = (err, object) -> merge_schema schema, get_schema object
 	@find().forEach each, () ->
+		console.log schema
 		@setSchema schema, callback
 
 ###

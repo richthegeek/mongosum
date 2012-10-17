@@ -73,6 +73,7 @@
       return merge_schema(schema, get_schema(object));
     };
     return this.find().forEach(each, function() {
+      console.log(schema);
       return this.setSchema(schema, callback);
     });
   };
