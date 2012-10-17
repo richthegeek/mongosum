@@ -126,11 +126,9 @@
             return (b === null && -a) || (a - b);
           },
           min: function(a, b) {
-            console.log('min', a, b);
             return a;
           },
           max: function(a, b) {
-            console.log('max', a, b);
             return a;
           }
         });
@@ -184,7 +182,6 @@
           upsert: !!upsert
         };
         _results.push(_this.findAndModify(opts, function(err, data) {
-          console.log('modified', data);
           if (!err && data) {
             subtract_schema(err, originals[data._id.toString()]);
             update_schema(err, data);

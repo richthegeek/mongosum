@@ -85,12 +85,8 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		if not err and data
 			merge_schema schema, (get_schema data), {
 				sum: (a, b) -> return (b is null and -a) or (a - b)
-				min: (a, b) ->
-					console.log 'min', a, b
-					a
-				max: (a, b) ->
-					console.log 'max', a, b
-					a
+				min: (a, b) -> a
+				max: (a, b) -> a
 			}
 
 	update_schema = (err, data) ->
@@ -129,7 +125,6 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 				upsert: !!upsert
 
 			@findAndModify opts, (err, data) =>
-				console.log 'modified', data
 				if not err and data
 					subtract_schema err, originals[data._id.toString()]
 					update_schema err, data
