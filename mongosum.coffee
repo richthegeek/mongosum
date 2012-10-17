@@ -36,8 +36,6 @@ Collection.prototype._merge_schemas = (err, data, callback, schema, schema_chang
 	if schema_change_count > 0
 		@getSchema (err, full_schema) =>
 			full_schema = merge_schema full_schema, schema, sum: (a, b) -> $inc: (if b isnt null then b else a)
-			console.log 'full', full_schema
-			throw 'NO MORE'
 			@setSchema full_schema, () ->
 				callback and callback err, data
 	else

@@ -64,8 +64,6 @@
             };
           }
         });
-        console.log('full', full_schema);
-        throw 'NO MORE';
         return _this.setSchema(full_schema, function() {
           return callback && callback(err, data);
         });
