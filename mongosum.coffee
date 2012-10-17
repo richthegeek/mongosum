@@ -28,7 +28,7 @@ Collection.prototype.setSchema = (schema, callback) ->
 
 	criteria = _collection: @name
 	schema._collection = @name
-	@db.schema.update criteria, schema, true
+	@db.schema.update criteria, schema, true, callback
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
@@ -49,11 +49,7 @@ Collection.prototype.insert = (object, callback) ->
 
 	update_schema = (data) ->
 		schema_change_count++
-		s = get_schema data
-		merge_schema schema, s
-
-		console.log s, schema, schema_change_count
-		console.log '\n'
+		merge_schema schema, get_schema data
 
 	if Object::toString.call(object) is '[object Array]'
 		complete = 0
@@ -69,6 +65,22 @@ Collection.prototype.insert = (object, callback) ->
 			if not err
 				update_schema data
 			cb err, data, schema
+
+Collection.prototype._update = Collection.prototype.update
+Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
+	if not callback and typeof multi is 'function'
+		callback = multi
+		multi = false
+	if not callback and typeof upsert is 'function'
+		callback = upsert
+		upsert = false
+	if callback and typeof callback isnt 'function'
+		throw 'Callback is not a function!'
+
+	@_update criteria, object, upsert, multi, (err, data) ->
+		console.log 'UPDATE', arguments
+		callback and callback.apply this, arguments
+
 
 
 get_schema = (object) ->

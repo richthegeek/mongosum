@@ -48,7 +48,7 @@
       _collection: this.name
     };
     schema._collection = this.name;
-    return this.db.schema.update(criteria, schema, true);
+    return this.db.schema.update(criteria, schema, true, callback);
   };
 
   Collection.prototype._insert = Collection.prototype.insert;
@@ -74,12 +74,8 @@
     schema = {};
     schema_change_count = 0;
     update_schema = function(data) {
-      var s;
       schema_change_count++;
-      s = get_schema(data);
-      merge_schema(schema, s);
-      console.log(s, schema, schema_change_count);
-      return console.log('\n');
+      return merge_schema(schema, get_schema(data));
     };
     if (Object.prototype.toString.call(object) === '[object Array]') {
       complete = 0;
@@ -104,6 +100,26 @@
         return cb(err, data, schema);
       });
     }
+  };
+
+  Collection.prototype._update = Collection.prototype.update;
+
+  Collection.prototype.update = function(criteria, object, upsert, multi, callback) {
+    if (!callback && typeof multi === 'function') {
+      callback = multi;
+      multi = false;
+    }
+    if (!callback && typeof upsert === 'function') {
+      callback = upsert;
+      upsert = false;
+    }
+    if (callback && typeof callback !== 'function') {
+      throw 'Callback is not a function!';
+    }
+    return this._update(criteria, object, upsert, multi, function(err, data) {
+      console.log('UPDATE', arguments);
+      return callback && callback.apply(this, arguments);
+    });
   };
 
   get_schema = function(object) {
