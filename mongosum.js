@@ -53,7 +53,7 @@
     return this.db.schema.update(criteria, schema, true, callback);
   };
 
-  Collection.prototype._merge_schemas = function(err, data, callback, schema, schema_change_count) {
+  Collection.prototype._merge_schemas = function(err, data, callback, options, schema, schema_change_count) {
     var _this = this;
     if (schema_change_count > 0) {
       return this.getSchema(function(err, full_schema) {
@@ -92,7 +92,7 @@
       _results.push(this._insert(obj, function(err, data) {
         update_schema(err, data);
         if (++complete === object.length) {
-          return _this._merge_schemas(err, data, callback, schema, schema_change_count);
+          return _this._merge_schemas(err, data, callback, {}, schema, schema_change_count);
         }
       }));
     }
@@ -102,7 +102,7 @@
   Collection.prototype._update = Collection.prototype.update;
 
   Collection.prototype.update = function(criteria, object, upsert, multi, callback) {
-    var options, schema, schema_change_count, subtract_schema, update_schema, _ref,
+    var merge_opts, options, schema, schema_change_count, subtract_schema, update_schema, _ref,
       _this = this;
     if (this.name === collection_name) {
       return Collection.prototype._update.apply(this, arguments);
@@ -121,28 +121,11 @@
     _ref = [{}, 0], schema = _ref[0], schema_change_count = _ref[1];
     subtract_schema = function(err, data) {
       if (!err && data) {
-        merge_schema(schema, get_schema(data), {
+        return merge_schema(schema, get_schema(data), {
           sum: function(a, b) {
             return (b === null && -a) || (a - b);
-          },
-          min: function(a, b) {
-            console.log('neg min', a, b);
-            if (a <= b) {
-              return null;
-            } else {
-              return a;
-            }
-          },
-          max: function(a, b) {
-            console.log('neg max', a, b);
-            if (a >= b) {
-              return null;
-            } else {
-              return b;
-            }
           }
         });
-        return console.log('done', schema);
       }
     };
     update_schema = function(err, data) {
@@ -161,6 +144,12 @@
       remove: false,
       "new": true,
       upsert: !!upsert
+    };
+    merge_opts = {
+      min: function(a, b) {
+        console.log('min', a, b);
+        return a;
+      }
     };
     return this.find(criteria).toArray(function(err, _originals) {
       var complete, o, obj, opts, originals, _i, _j, _len, _len1, _results;
@@ -190,7 +179,7 @@
             subtract_schema(err, originals[data._id.toString()]);
             update_schema(err, data);
             if (++complete === object.length) {
-              return _this._merge_schemas(err, data, callback, schema, schema_change_count);
+              return _this._merge_schemas(err, data, callback, merge_opts, schema, schema_change_count);
             }
           }
         }));

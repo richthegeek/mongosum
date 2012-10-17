@@ -32,7 +32,7 @@ Collection.prototype.setSchema = (schema, callback) ->
 	schema._collection = @name
 	@db.schema.update criteria, schema, true, callback
 
-Collection.prototype._merge_schemas = (err, data, callback, schema, schema_change_count) ->
+Collection.prototype._merge_schemas = (err, data, callback, options, schema, schema_change_count) ->
 	if schema_change_count > 0
 		@getSchema (err, full_schema) =>
 			full_schema = merge_schema full_schema, schema
@@ -60,7 +60,7 @@ Collection.prototype.insert = (object, callback) ->
 		@_insert obj, (err, data) =>
 			update_schema err, data
 			if ++complete is object.length
-				@_merge_schemas err, data, callback, schema, schema_change_count
+				@_merge_schemas err, data, callback, {}, schema, schema_change_count
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
@@ -83,17 +83,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	[schema, schema_change_count]  = [{}, 0]
 	subtract_schema = (err, data) ->
 		if not err and data
-			merge_schema schema, (get_schema data), {
-				sum: (a, b) ->
-					return (b is null and -a) or (a - b)
-				min: (a, b) ->
-					console.log 'neg min', a, b
-					(if a <= b then null else a)
-				max: (a, b) ->
-					console.log 'neg max', a, b
-					(if a >= b then null else b)
-			}
-			console.log 'done', schema
+			merge_schema schema, (get_schema data), sum: (a, b) -> return (b is null and -a) or (a - b)
 
 	update_schema = (err, data) ->
 		if not err and data
@@ -110,6 +100,11 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		remove: false
 		new: true
 		upsert: !! upsert
+
+	merge_opts =
+		min: (a, b) ->
+			console.log 'min', a, b
+			a
 
 	@find(criteria).toArray (err, _originals = []) =>
 
@@ -132,7 +127,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 					subtract_schema err, originals[data._id.toString()]
 					update_schema err, data
 					if ++complete is object.length
-						@_merge_schemas err, data, callback, schema, schema_change_count
+						@_merge_schemas err, data, callback, merge_opts, schema, schema_change_count
 
 get_schema = (object) ->
 	walk_objects object, {}, (key, vals, types) ->
