@@ -105,6 +105,9 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		new: true
 		upsert: !! upsert
 
+	console.log 'UPDATE', options
+	throw '...'
+
 	@find(criteria).toArray (err, _originals = []) ->
 		originals = {}
 		originals[o._id.toString()] = o for o in _originals

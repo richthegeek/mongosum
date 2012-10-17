@@ -159,6 +159,8 @@
       "new": true,
       upsert: !!upsert
     };
+    console.log('UPDATE', options);
+    throw '...';
     return this.find(criteria).toArray(function(err, _originals) {
       var complete, o, obj, originals, _i, _j, _len, _len1, _results,
         _this = this;
