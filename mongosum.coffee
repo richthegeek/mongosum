@@ -97,7 +97,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		object = [object]
 
 	if multi isnt true
-		object = object.shift()
+		object = [object.shift()]
 
 	options =
 		query: criteria
@@ -106,12 +106,13 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		upsert: !! upsert
 
 	@find(criteria).toArray (err, _originals = []) ->
-		console.log 'found'
-		console.log err, _originals
-		throw '...'
 
 		originals = {}
 		originals[o._id.toString()] = o for o in _originals
+
+		console.log 'found'
+		console.log originals
+		throw '...'
 
 		complete = 0
 		for obj in object

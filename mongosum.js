@@ -151,7 +151,7 @@
       object = [object];
     }
     if (multi !== true) {
-      object = object.shift();
+      object = [object.shift()];
     }
     options = {
       query: criteria,
@@ -165,14 +165,14 @@
       if (_originals == null) {
         _originals = [];
       }
-      console.log('found');
-      console.log(err, _originals);
-      throw '...';
       originals = {};
       for (_i = 0, _len = _originals.length; _i < _len; _i++) {
         o = _originals[_i];
         originals[o._id.toString()] = o;
       }
+      console.log('found');
+      console.log(originals);
+      throw '...';
       complete = 0;
       _results = [];
       for (_j = 0, _len1 = object.length; _j < _len1; _j++) {
