@@ -35,7 +35,7 @@ Collection.prototype.setSchema = (schema, callback) ->
 Collection.prototype._merge_schemas = (err, data, callback, options, schema, schema_change_count) ->
 	if schema_change_count > 0
 		@getSchema (err, full_schema) =>
-			full_schema = merge_schema full_schema, schema
+			full_schema = merge_schema full_schema, schema, options
 			@setSchema full_schema, () ->
 				callback and callback err, data
 	else
