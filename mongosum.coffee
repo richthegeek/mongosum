@@ -13,6 +13,9 @@ Server.prototype.db = (name) ->
 DB.prototype.collection = (name) ->
 	return @_collections[name] or (@_collections[name] = new Collection @, name)
 
+###
+# Retrieve the schema for this collection
+###
 Collection.prototype.getSchema = (callback) ->
 	if @name is collection_name
 		throw 'MongoSum cannot get the schema of the schemas collection.'
@@ -21,6 +24,9 @@ Collection.prototype.getSchema = (callback) ->
 	@db.schema.find(criteria).next (err, schema = {}) ->
 		callback err, schema
 
+###
+# Set the schema for this collection (used internally)
+###
 Collection.prototype.setSchema = (schema, callback) ->
 	if @name is collection_name
 		throw 'MongoSum cannot set the schema of the schemas collection'
@@ -29,6 +35,18 @@ Collection.prototype.setSchema = (schema, callback) ->
 	schema._collection = @name
 	@db.schema.update criteria, schema, true, callback
 
+###
+# Do a full-table update of the schema. This is expensive.
+###
+Collection.prototype.updateSchema = (callback) ->
+	schema = {}
+	each = (err, object) -> merge_schema schema, get_schema object
+	@find().forEach each, () ->
+		@setSchema schema, callback
+
+###
+# INTERNAL. Merge schema, save it, and fire the callback.
+###
 Collection.prototype._merge_schemas = (err, data, callback, options, schema, schema_change_count) ->
 	if schema_change_count > 0
 		@getSchema (err, full_schema) =>
@@ -103,15 +121,20 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		upsert: !! upsert
 
 	merge_opts =
-		min: (a, b) -> return (if isNaN(parseInt(a)) or (b == a) then null else Math.min(a,b))
-		max: (a, b) -> return (if isNaN(parseInt(a)) or (b == a) then null else Math.max(a,b))
+		min: (a, b) ->
+			if isNaN(parseInt(a)) or (b == a)
+				throw 'FULL UPDATE'
+			return Math.min a, b
+		max: (a, b) ->
+			if isNaN(parseInt(a)) or (b == a)
+				throw 'FULL UPDATE'
+			return Math.max a, b
 
 
 	@find(criteria).toArray (err, _originals = []) =>
-
 		originals = {}
 		originals[o._id.toString()] = o for o in _originals
-
+		for_merge = []
 		complete = 0
 		for obj in object
 			opts =
@@ -125,9 +148,56 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 			@findAndModify opts, (err, data) =>
 				if not err and data
 					subtract_schema err, originals[data._id.toString()]
-					update_schema err, data
+					if not err
+						for_merge.push data
 					if ++complete is object.length
-						@_merge_schemas err, data, callback, merge_opts, schema, schema_change_count
+						try
+							update_schema null, data for data in for_merge
+							@_merge_schemas err, data, callback, merge_opts, schema, schema_change_count
+						catch e
+							if e is 'FULL UPDATE'
+								@updateSchema callback
+							else
+								throw e
+
+Collection.prototype._remove = Collection.prototype.remove
+Collection.prototype.remove = (criteria, callback) ->
+	if not callback and typeof criteria is 'function'
+		callback = criteria
+		criteria = {}
+
+	schema = {}
+	subtract_schema = (err, data) ->
+	if not err and data
+		merge_schema schema, (get_schema data), {
+			sum: (a, b) -> return (b is null and -a) or (a - b)
+			min: (a, b) -> a
+			max: (a, b) -> a
+		}
+	merge_opts =
+		min: (a, b) ->
+			if isNaN(parseInt(a)) or (b == a)
+				throw 'FULL UPDATE'
+			return Math.min a, b
+		max: (a, b) ->
+			if isNaN(parseInt(a)) or (b == a)
+				throw 'FULL UPDATE'
+			return Math.max a, b
+
+	@find(criteria).toArray (err, data) =>
+		data = data or []
+		for row in data
+			subtract_schema err, row
+		try
+			if data.length > 0
+				@_merge_schemas err, data, (() -> null), merge_opts, schema, 1
+			@_remove criteria, callback
+		catch e
+			if e is 'FULL UPDATE'
+				@updateSchema callback
+			else
+				throw e
+
 
 get_schema = (object) ->
 	walk_objects object, {}, (key, vals, types) ->

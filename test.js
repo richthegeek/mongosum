@@ -10,11 +10,8 @@
 
   coll = db.collection('test');
 
-  coll.update({
-    a: 'george'
-  }, {
-    a: 'george',
-    b: 60
+  coll.updateSchema(function() {
+    return console.log('done');
   });
 
 }).call(this);

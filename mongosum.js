@@ -23,6 +23,11 @@
     return this._collections[name] || (this._collections[name] = new Collection(this, name));
   };
 
+  /*
+  # Retrieve the schema for this collection
+  */
+
+
   Collection.prototype.getSchema = function(callback) {
     var criteria;
     if (this.name === collection_name) {
@@ -39,6 +44,11 @@
     });
   };
 
+  /*
+  # Set the schema for this collection (used internally)
+  */
+
+
   Collection.prototype.setSchema = function(schema, callback) {
     var criteria;
     if (this.name === collection_name) {
@@ -50,6 +60,27 @@
     schema._collection = this.name;
     return this.db.schema.update(criteria, schema, true, callback);
   };
+
+  /*
+  # Do a full-table update of the schema. This is expensive.
+  */
+
+
+  Collection.prototype.updateSchema = function(callback) {
+    var each, schema;
+    schema = {};
+    each = function(err, object) {
+      return merge_schema(schema, get_schema(object));
+    };
+    return this.find().forEach(each, function() {
+      return this.setSchema(schema, callback);
+    });
+  };
+
+  /*
+  # INTERNAL. Merge schema, save it, and fire the callback.
+  */
+
 
   Collection.prototype._merge_schemas = function(err, data, callback, options, schema, schema_change_count) {
     var _this = this;
@@ -151,14 +182,20 @@
     };
     merge_opts = {
       min: function(a, b) {
-        return (isNaN(parseInt(a)) || (b === a) ? null : Math.min(a, b));
+        if (isNaN(parseInt(a)) || (b === a)) {
+          throw 'FULL UPDATE';
+        }
+        return Math.min(a, b);
       },
       max: function(a, b) {
-        return (isNaN(parseInt(a)) || (b === a) ? null : Math.max(a, b));
+        if (isNaN(parseInt(a)) || (b === a)) {
+          throw 'FULL UPDATE';
+        }
+        return Math.max(a, b);
       }
     };
     return this.find(criteria).toArray(function(err, _originals) {
-      var complete, o, obj, opts, originals, _i, _j, _len, _len1, _results;
+      var complete, for_merge, o, obj, opts, originals, _i, _j, _len, _len1, _results;
       if (_originals == null) {
         _originals = [];
       }
@@ -167,6 +204,7 @@
         o = _originals[_i];
         originals[o._id.toString()] = o;
       }
+      for_merge = [];
       complete = 0;
       _results = [];
       for (_j = 0, _len1 = object.length; _j < _len1; _j++) {
@@ -180,16 +218,93 @@
           upsert: !!upsert
         };
         _results.push(_this.findAndModify(opts, function(err, data) {
+          var _k, _len2;
           if (!err && data) {
             subtract_schema(err, originals[data._id.toString()]);
-            update_schema(err, data);
+            if (!err) {
+              for_merge.push(data);
+            }
             if (++complete === object.length) {
-              return _this._merge_schemas(err, data, callback, merge_opts, schema, schema_change_count);
+              try {
+                for (_k = 0, _len2 = for_merge.length; _k < _len2; _k++) {
+                  data = for_merge[_k];
+                  update_schema(null, data);
+                }
+                return _this._merge_schemas(err, data, callback, merge_opts, schema, schema_change_count);
+              } catch (e) {
+                if (e === 'FULL UPDATE') {
+                  return _this.updateSchema(callback);
+                } else {
+                  throw e;
+                }
+              }
             }
           }
         }));
       }
       return _results;
+    });
+  };
+
+  Collection.prototype._remove = Collection.prototype.remove;
+
+  Collection.prototype.remove = function(criteria, callback) {
+    var merge_opts, schema, subtract_schema,
+      _this = this;
+    if (!callback && typeof criteria === 'function') {
+      callback = criteria;
+      criteria = {};
+    }
+    schema = {};
+    subtract_schema = function(err, data) {};
+    if (!err && data) {
+      merge_schema(schema, get_schema(data), {
+        sum: function(a, b) {
+          return (b === null && -a) || (a - b);
+        },
+        min: function(a, b) {
+          return a;
+        },
+        max: function(a, b) {
+          return a;
+        }
+      });
+    }
+    merge_opts = {
+      min: function(a, b) {
+        if (isNaN(parseInt(a)) || (b === a)) {
+          throw 'FULL UPDATE';
+        }
+        return Math.min(a, b);
+      },
+      max: function(a, b) {
+        if (isNaN(parseInt(a)) || (b === a)) {
+          throw 'FULL UPDATE';
+        }
+        return Math.max(a, b);
+      }
+    };
+    return this.find(criteria).toArray(function(err, data) {
+      var row, _i, _len;
+      data = data || [];
+      for (_i = 0, _len = data.length; _i < _len; _i++) {
+        row = data[_i];
+        subtract_schema(err, row);
+      }
+      try {
+        if (data.length > 0) {
+          _this._merge_schemas(err, data, (function() {
+            return null;
+          }), merge_opts, schema, 1);
+        }
+        return _this._remove(criteria, callback);
+      } catch (e) {
+        if (e === 'FULL UPDATE') {
+          return _this.updateSchema(callback);
+        } else {
+          throw e;
+        }
+      }
     });
   };
 
