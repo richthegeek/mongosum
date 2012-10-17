@@ -59,11 +59,11 @@ Collection.prototype.setSummary = (summary, callback) ->
 	if @name is collection_name
 		throw 'MongoSum cannot set the summary of the summarys collection'
 
-	console.log 'Set Summary', @name, summary
-
 	criteria = _collection: @name
 	summary._collection = @name
-	@db.summary.update criteria, summary, true, callback
+	@db.summary.update criteria, summary, true, () ->
+		console.log arguments
+		callback and callback.apply this, arguments
 
 ###
 # Do a full-table update of the summary. This is expensive.

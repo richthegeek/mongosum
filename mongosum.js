@@ -97,12 +97,14 @@
     if (this.name === collection_name) {
       throw 'MongoSum cannot set the summary of the summarys collection';
     }
-    console.log('Set Summary', this.name, summary);
     criteria = {
       _collection: this.name
     };
     summary._collection = this.name;
-    return this.db.summary.update(criteria, summary, true, callback);
+    return this.db.summary.update(criteria, summary, true, function() {
+      console.log(arguments);
+      return callback && callback.apply(this, arguments);
+    });
   };
 
   /*
