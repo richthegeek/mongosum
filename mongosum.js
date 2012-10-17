@@ -41,7 +41,8 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var cb, update_schema;
+    var cb, update_schema,
+      _this = this;
     cb = function(err, data, schema) {
       return callback && callback(err, data);
     };
@@ -55,7 +56,7 @@
         _results = [];
         for (_i = 0, _len = object.length; _i < _len; _i++) {
           obj = object[_i];
-          _results.push(this._insert(obj, function(err, data) {
+          _results.push(_this._insert(obj, function(err, data) {
             if (!err) {
               update_schema(data);
             }
@@ -66,7 +67,7 @@
         }
         return _results;
       } else {
-        return this._insert(object, function(err, data) {
+        return _this._insert(object, function(err, data) {
           if (!err) {
             update_schema(data);
           }

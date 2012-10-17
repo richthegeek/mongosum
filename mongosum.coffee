@@ -31,7 +31,7 @@ Collection.prototype.insert = (object, callback) ->
 	update_schema = (data) ->
 		console.log 'INSERTED', data
 
-	@getSchema (err, schema) ->
+	@getSchema (err, schema) =>
 		if Object::toString.call(object) is '[object Array]'
 			complete = 0
 			for obj in object
