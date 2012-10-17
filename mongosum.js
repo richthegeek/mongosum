@@ -39,28 +39,39 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var complete, obj, _i, _len, _results;
-    if (Object.prototype.toString.call(object) === '[object Array]') {
-      complete = 0;
-      _results = [];
-      for (_i = 0, _len = object.length; _i < _len; _i++) {
-        obj = object[_i];
-        _results.push(this.insert(obj, function(err, data) {
-          complete++;
-          if (complete === object.length) {
-            return callback && callback.apply(this, arguments);
+    var cb, update_schema;
+    cb = function(err, data, schema) {
+      return callback && callback(err, data);
+    };
+    update_schema = function(data) {
+      return console.log('INSERTED', data);
+    };
+    return this.getSchema(function(err, schema) {
+      var complete, obj, _i, _len, _results;
+      if (Object.prototype.toString.call(object) === '[object Array]') {
+        complete = 0;
+        _results = [];
+        for (_i = 0, _len = object.length; _i < _len; _i++) {
+          obj = object[_i];
+          _results.push(this._insert(obj, function(err, data) {
+            if (!err) {
+              update_schema(data);
+            }
+            if (++complete === object.length) {
+              return cb(err, data, schema);
+            }
+          }));
+        }
+        return _results;
+      } else {
+        return this._insert(object, function(err, data) {
+          if (!err) {
+            update_schema(data);
           }
-        }));
+          return cb(err, data, schema);
+        });
       }
-      return _results;
-    } else {
-      return this._insert(object, function(err, data) {
-        console.log('inserted');
-        console.log('    ', err);
-        console.log('    ', data);
-        return callback && callback.apply(this, arguments);
-      });
-    }
+    });
   };
 
   module.exports = Server;

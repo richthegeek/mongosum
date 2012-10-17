@@ -22,18 +22,27 @@ Collection.prototype.getSchema = (callback) ->
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
-	if Object::toString.call(object) is '[object Array]'
-		complete = 0
-		for obj in object
-			@insert obj, (err, data) ->
-				complete++
-				if complete is object.length
-					callback and callback.apply this, arguments
-	else
-		@_insert object, (err, data) ->
-			console.log 'inserted'
-			console.log '    ', err
-			console.log '    ', data
-			callback and callback.apply this, arguments
+	cb = (err, data, schema) ->
+		# update schema
+		callback and callback err, data
+
+	update_schema = (data) ->
+		console.log 'INSERTED', data
+
+	@getSchema (err, schema) ->
+		if Object::toString.call(object) is '[object Array]'
+			complete = 0
+			for obj in object
+				@_insert obj, (err, data) ->
+					if not err
+						update_schema data
+
+					if ++complete is object.length
+						cb err, data, schema
+		else
+			@_insert object, (err, data) ->
+				if not err
+					update_schema data
+				cb err, data, schema
 
 module.exports = Server
