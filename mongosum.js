@@ -83,7 +83,7 @@
         obj = object[_i];
         _results.push(this._insert(obj, function(err, data) {
           if (!err) {
-            update_schema(schema, data);
+            update_schema(data);
           }
           if (++complete === object.length) {
             return cb(err, data, schema);

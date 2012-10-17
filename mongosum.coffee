@@ -56,7 +56,7 @@ Collection.prototype.insert = (object, callback) ->
 		for obj in object
 			@_insert obj, (err, data) ->
 				if not err
-					update_schema schema, data
+					update_schema data
 
 				if ++complete is object.length
 					cb err, data, schema
