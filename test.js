@@ -8,7 +8,7 @@
 
   db = dbms.db('mongosum_test');
 
-  coll = db.collection(db);
+  coll = db.collection('test');
 
   coll.insert({
     a: 'alice',
