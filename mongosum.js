@@ -38,11 +38,24 @@
     });
   };
 
+  Collection.prototype.setSchema = function(callback) {
+    var criteria;
+    if (this.name === 'schemas') {
+      throw 'MongoSum cannot set the schema of the schemas collection';
+    }
+    return criteria = {
+      collection: this.name
+    };
+  };
+
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
     var cb, complete, merge_schema, obj, schema, update_schema, _i, _len, _results,
       _this = this;
+    if (this.name === 'schemas') {
+      return;
+    }
     cb = function(err, data, schema) {
       return _this.getSchema(function(err, full_schema) {
         full_schema = merge_schema(full_schema, schema);
