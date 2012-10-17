@@ -111,6 +111,7 @@ merge_schema = (left, right, options) ->
 
 	walk_objects left, right, (key, vals, types) ->
 		if not vals[0] and vals[1]
+			console.log vals[0], vals[1]
 			vals[0] = JSON.parse JSON.stringify vals[1]
 			if vals[1].sum
 				vals[1].sum = 0
