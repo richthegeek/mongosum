@@ -105,9 +105,9 @@ get_schema = (object) ->
 
 merge_schema = (left, right, options) ->
 	options ?= {}
-	options.sum = (a, b) -> return a + b
-	options.min = Math.min
-	options.max = Math.max
+	options.sum ?= (a, b) -> return a + b
+	options.min ?= Math.min
+	options.max ?= Math.max
 
 	walk_objects left, right, (key, vals, types) ->
 		if not vals[0] and vals[1]

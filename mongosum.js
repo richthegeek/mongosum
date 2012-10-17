@@ -154,14 +154,21 @@
   };
 
   merge_schema = function(left, right, options) {
+    var _ref, _ref1, _ref2;
     if (options == null) {
       options = {};
     }
-    options.sum = function(a, b) {
-      return a + b;
-    };
-    options.min = Math.min;
-    options.max = Math.max;
+    if ((_ref = options.sum) == null) {
+      options.sum = function(a, b) {
+        return a + b;
+      };
+    }
+    if ((_ref1 = options.min) == null) {
+      options.min = Math.min;
+    }
+    if ((_ref2 = options.max) == null) {
+      options.max = Math.max;
+    }
     return walk_objects(left, right, function(key, vals, types) {
       if (!vals[0] && vals[1]) {
         vals[0] = vals[1];
