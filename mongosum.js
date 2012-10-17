@@ -171,12 +171,12 @@
     }
     return walk_objects(left, right, function(key, vals, types) {
       if (!vals[0] && vals[1]) {
-        console.log(vals[0], vals[1]);
         vals[0] = JSON.parse(JSON.stringify(vals[1]));
         if (vals[1].sum) {
           vals[1].sum = 0;
         }
       }
+      console.log(vals[0], vals[1]);
       if ((vals[0] != null) && vals[0].type) {
         if (vals[0].type === 'Number') {
           if (vals[1].min && vals[1].max && vals[1].sum) {
