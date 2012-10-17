@@ -11,7 +11,7 @@
   Server.prototype.db = function(name) {
     if (!(this._dbs[name] != null)) {
       this._dbs[name] = new DB(this, name);
-      this._dbs[name].schema = new Collection(db, 'schemas');
+      this._dbs[name].schema = new Collection(this._dbs[name], 'schemas');
     }
     return this._dbs[name];
   };

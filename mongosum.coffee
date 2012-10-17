@@ -5,7 +5,7 @@ Collection = require 'mongolian/lib/collection.js'
 Server.prototype.db = (name) ->
 	if not @_dbs[name]?
 		@_dbs[name] = new DB @, name
-		@_dbs[name].schema = new Collection db, 'schemas'
+		@_dbs[name].schema = new Collection @_dbs[name], 'schemas'
 	return @_dbs[name]
 
 DB.prototype.collection = (name) ->
