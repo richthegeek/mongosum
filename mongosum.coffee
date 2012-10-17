@@ -15,7 +15,7 @@ Collection.prototype.getSchema = (callback) ->
 	if @name is 'schemas'
 		throw 'MongoSum cannot get the schema of the schemas collection.'
 
-	criteria = collection: @name
+	criteria = _collection: @name
 	console.log 'get schema', criteria
 
 	@db.schema.find(criteria).next (err, schema = {}) ->
