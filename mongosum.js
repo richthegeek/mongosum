@@ -53,72 +53,66 @@
     return this.db.schema.update(criteria, schema, true, callback);
   };
 
+  Collection.prototype._merge_schemas = function(err, data, callback, schema, schema_change_count) {
+    var _this = this;
+    if (schema_change_count > 0) {
+      return this.getSchema(function(err, full_schema) {
+        full_schema = merge_schema(full_schema, schema, {
+          sum: function(a, b) {
+            return {
+              $inc: (b !== null ? b : a)
+            };
+          }
+        });
+        console.log('full', full_schema);
+        throw 'NO MORE';
+        return _this.setSchema(full_schema, function() {
+          return callback && callback(err, data);
+        });
+      });
+    } else {
+      return callback && callback(err, data);
+    }
+  };
+
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var cb, complete, obj, schema, schema_change_count, update_schema, _i, _len, _results,
-      _this = this;
+    var complete, obj, schema, schema_change_count, update_schema, _i, _len, _ref, _results;
     if (this.name === collection_name) {
       return Collection.prototype._insert.apply(this, arguments);
     }
-    cb = function(err, data, schema) {
-      if (schema_change_count > 0) {
-        return _this.getSchema(function(err, full_schema) {
-          full_schema = merge_schema(full_schema, schema, {
-            sum: function(a, b) {
-              return {
-                $inc: (b !== null ? b : a)
-              };
-            }
-          });
-          console.log('full', full_schema);
-          throw 'NO MORE';
-          return _this.setSchema(full_schema, function() {
-            return callback && callback(err, data);
-          });
-        });
-      } else {
-        return callback && callback(err, data);
+    _ref = [{}, 0], schema = _ref[0], schema_change_count = _ref[1];
+    update_schema = function(err, data) {
+      if (!err) {
+        schema_change_count++;
+        return merge_schema(schema, get_schema(data));
       }
     };
-    schema = {};
-    schema_change_count = 0;
-    update_schema = function(data) {
-      schema_change_count++;
-      return merge_schema(schema, get_schema(data));
-    };
-    if (Object.prototype.toString.call(object) === '[object Array]') {
-      complete = 0;
-      _results = [];
-      for (_i = 0, _len = object.length; _i < _len; _i++) {
-        obj = object[_i];
-        _results.push(this._insert(obj, function(err, data) {
-          if (!err) {
-            update_schema(data);
-          }
-          if (++complete === object.length) {
-            return cb(err, data, schema);
-          }
-        }));
-      }
-      return _results;
-    } else {
-      return this._insert(object, function(err, data) {
-        if (!err) {
-          update_schema(data);
-        }
-        return cb(err, data, schema);
-      });
+    if (Object.prototype.toString.call(object) !== '[object Array]') {
+      object = [object];
     }
+    complete = 0;
+    _results = [];
+    for (_i = 0, _len = object.length; _i < _len; _i++) {
+      obj = object[_i];
+      _results.push(this._insert(obj, function(err, data) {
+        update_schema(err, data);
+        if (++complete === object.length) {
+          return this._merge_schemas(err, data, callback, schema, schema_change_count);
+        }
+      }));
+    }
+    return _results;
   };
 
   Collection.prototype._update = Collection.prototype.update;
 
   Collection.prototype.update = function(criteria, object, upsert, multi, callback) {
+    var options, schema, schema_change_count, subtract_schema, update_schema, _ref;
     if (this.name === collection_name) {
       return Collection.prototype._update.apply(this, arguments);
     }
-    console.log('update');
     if (!callback && typeof multi === 'function') {
       callback = multi;
       multi = false;
@@ -130,13 +124,73 @@
     if (callback && typeof callback !== 'function') {
       throw 'Callback is not a function!';
     }
-    return this._update(criteria, object, upsert, multi, function(err, data) {
-      try {
-        an.update.occurred++;
-      } catch (e) {
-        console.log(e.stack);
+    _ref = [{}, 0], schema = _ref[0], schema_change_count = _ref[1];
+    subtract_schema = function(err, data) {
+      if (!err && data) {
+        return merge_schema(schema, get_schema(data), {
+          sum: function(a, b) {
+            return a - b;
+          },
+          min: function(a, b) {
+            if (a <= b) {
+              return null;
+            } else {
+              return a;
+            }
+          },
+          max: function(a, b) {
+            if (a >= b) {
+              return null;
+            } else {
+              return b;
+            }
+          }
+        });
       }
-      return callback && callback.apply(this, arguments);
+    };
+    update_schema = function(err, data) {
+      if (!err && data) {
+        schema_change_count++;
+        return merge_schema(schema, get_schema(data));
+      }
+    };
+    if (Object.prototype.toString.call(object) !== '[object Array]') {
+      object = [object];
+    }
+    if (multi !== true) {
+      object = object.shift();
+    }
+    options = {
+      query: criteria,
+      remove: false,
+      "new": true,
+      upsert: !!upsert
+    };
+    return this.find(criteria).toArray(function(err, _originals) {
+      var complete, o, obj, originals, _i, _j, _len, _len1, _results;
+      if (_originals == null) {
+        _originals = [];
+      }
+      originals = {};
+      for (_i = 0, _len = _originals.length; _i < _len; _i++) {
+        o = _originals[_i];
+        originals[o._id.toString()] = o;
+      }
+      complete = 0;
+      _results = [];
+      for (_j = 0, _len1 = object.length; _j < _len1; _j++) {
+        obj = object[_j];
+        _results.push(this.findAndModify(options, obj, function(err, data) {
+          if (!err && data) {
+            subtract_schema(err, originals[data._id.toString()]);
+            update_schema(err, data);
+            if (++complete === object.length) {
+              return this._merge_schemas(err, data, callback, schema, schema_change_count);
+            }
+          }
+        }));
+      }
+      return _results;
     });
   };
 
@@ -188,16 +242,16 @@
     });
   };
 
-  walk_objects = function(object, second, fn) {
-    var ignore, k, key, keys, type1, type2, v, v1, v2, _i, _j, _len, _len1;
+  walk_objects = function(first, second, fn) {
+    var ignore, k, key, keys, out, type, v, v1, v2, _i, _len, _ref;
     if (second == null) {
       second = {};
     }
     keys = (function() {
       var _results;
       _results = [];
-      for (k in object) {
-        v = object[k];
+      for (k in first) {
+        v = first[k];
         _results.push(k);
       }
       return _results;
@@ -209,28 +263,24 @@
       }
     }
     ignore = ['_c', '_h', '_id', '_t'];
+    out = {};
     for (_i = 0, _len = keys.length; _i < _len; _i++) {
       key = keys[_i];
       if (!(__indexOf.call(ignore, key) < 0)) {
         continue;
       }
-      v1 = object[key];
+      v1 = first[key];
       v2 = second[key];
-      type1 = ((v1 != null) && v1.constructor && v1.constructor.name) || 'Null';
-      type2 = ((v2 != null) && v2.constructor && v2.constructor.name) || 'Null';
-      if ((type1 === 'Object' || type1 === 'Array') && !(v1.type != null)) {
-        object[key] = walk_objects(v1, v2, fn);
+      type = function(o) {
+        return ((o != null) && o.constructor && o.constructor.name) || 'Null';
+      };
+      if (((_ref = type(v1)) === 'Object' || _ref === 'Array') && !(v1.type != null)) {
+        out[key] = walk_objects(v1, v2, fn);
       } else {
-        object[key] = fn(key, [v1, v2], [type1, type2]);
+        out[key] = fn(key, [v1, v2], [type(v1), type(v2)]);
       }
     }
-    for (_j = 0, _len1 = ignore.length; _j < _len1; _j++) {
-      key = ignore[_j];
-      if (object[key] != null) {
-        delete object[key];
-      }
-    }
-    return object;
+    return out;
   };
 
   module.exports = Server;

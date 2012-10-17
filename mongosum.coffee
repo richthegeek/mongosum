@@ -32,50 +32,43 @@ Collection.prototype.setSchema = (schema, callback) ->
 	schema._collection = @name
 	@db.schema.update criteria, schema, true, callback
 
+Collection.prototype._merge_schemas = (err, data, callback, schema, schema_change_count) ->
+	if schema_change_count > 0
+		@getSchema (err, full_schema) =>
+			full_schema = merge_schema full_schema, schema, sum: (a, b) -> $inc: (if b isnt null then b else a)
+			console.log 'full', full_schema
+			throw 'NO MORE'
+			@setSchema full_schema, () ->
+				callback and callback err, data
+	else
+		callback and callback err, data
+
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
 	if @name is collection_name
 		return Collection.prototype._insert.apply this, arguments
 
-	cb = (err, data, schema) =>
-		if schema_change_count > 0
-			@getSchema (err, full_schema) =>
-				full_schema = merge_schema full_schema, schema, sum: (a, b) -> $inc: (if b isnt null then b else a)
-				console.log 'full', full_schema
-				throw 'NO MORE'
-				@setSchema full_schema, () ->
-					callback and callback err, data
-		else
-			callback and callback err, data
+	[schema, schema_change_count]  = [{}, 0]
+	update_schema = (err, data) ->
+		if not err
+			schema_change_count++
+			merge_schema schema, get_schema data
 
-	schema = {}
-	schema_change_count = 0
+	if Object::toString.call(object) isnt '[object Array]'
+		object = [object]
 
-	update_schema = (data) ->
-		schema_change_count++
-		merge_schema schema, get_schema data
-
-	if Object::toString.call(object) is '[object Array]'
-		complete = 0
-		for obj in object
-			@_insert obj, (err, data) ->
-				if not err
-					update_schema data
-
-				if ++complete is object.length
-					cb err, data, schema
-	else
-		@_insert object, (err, data) ->
-			if not err
-				update_schema data
-			cb err, data, schema
+	complete = 0
+	for obj in object
+		@_insert obj, (err, data) ->
+			update_schema err, data
+			if ++complete is object.length
+				@_merge_schemas err, data, callback, schema, schema_change_count
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	if @name is collection_name
 		return Collection.prototype._update.apply this, arguments
 
-	console.log 'update'
 	if not callback and typeof multi is 'function'
 		callback = multi
 		multi = false
@@ -85,14 +78,47 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	if callback and typeof callback isnt 'function'
 		throw 'Callback is not a function!'
 
-	@_update criteria, object, upsert, multi, (err, data) ->
-		try
-			an.update.occurred++
-		catch e
-			console.log e.stack
-		callback and callback.apply this, arguments
+	# Process for an update:
+	# Do a find on the criteria specified
+	# Do a findAndModify
+	# If the update returns, subtract original and add updated
+	[schema, schema_change_count]  = [{}, 0]
+	subtract_schema = (err, data) ->
+		if not err and data
+			merge_schema schema, (get_schema data), {
+				sum: (a, b) -> a - b
+				min: (a, b) -> (if a <= b then null else a)
+				max: (a, b) -> (if a >= b then null else b)
+			}
+	update_schema = (err, data) ->
+		if not err and data
+			schema_change_count++
+			merge_schema schema, get_schema data
 
+	if Object::toString.call(object) isnt '[object Array]'
+		object = [object]
 
+	if multi isnt true
+		object = object.shift()
+
+	options =
+		query: criteria
+		remove: false
+		new: true
+		upsert: !! upsert
+
+	@find(criteria).toArray (err, _originals = []) ->
+		originals = {}
+		originals[o._id.toString()] = o for o in _originals
+
+		complete = 0
+		for obj in object
+			@findAndModify options, obj, (err, data) ->
+				if not err and data
+					subtract_schema err, originals[data._id.toString()]
+					update_schema err, data
+					if ++complete is object.length
+						@_merge_schemas err, data, callback, schema, schema_change_count
 
 get_schema = (object) ->
 	walk_objects object, {}, (key, vals, types) ->
@@ -111,8 +137,7 @@ merge_schema = (left, right, options = {}) ->
 	walk_objects left, right, (key, vals, types) ->
 		if not vals[0] and vals[1]
 			vals[0] = JSON.parse JSON.stringify vals[1]
-			if vals[1].sum
-				vals[1].sum = null
+			if vals[1].sum then vals[1].sum = null
 		if vals[0]? and vals[0].type
 			if vals[0].type is 'Number' and vals[1].type is 'Number'
 				vals[0].min = options.min vals[0].min, vals[1].min
@@ -122,24 +147,22 @@ merge_schema = (left, right, options = {}) ->
 			vals[0].example = (vals[1] and vals[1].example) or vals[0].example
 		return vals[0]
 
-walk_objects = (object, second = {}, fn) ->
-	keys = (k for k,v of object)
+walk_objects = (first, second = {}, fn) ->
+	keys = (k for k,v of first)
 	(keys.push k for k,v of second when k not in keys)
 
 	ignore = ['_c', '_h', '_id', '_t']
+	out = {}
 	for key in keys when key not in ignore
-		v1 = object[key]
+		v1 = first[key]
 		v2 = second[key]
-		type1 = (v1? and v1.constructor and v1.constructor.name) or 'Null'
-		type2 = (v2? and v2.constructor and v2.constructor.name) or 'Null'
+		type = (o) -> (o? and o.constructor and o.constructor.name) or 'Null'
 
-		if type1 in ['Object', 'Array'] and not v1.type?
-			object[key] = walk_objects v1, v2, fn
+		if type(v1) in ['Object', 'Array'] and not v1.type?
+			out[key] = walk_objects v1, v2, fn
 		else
-			object[key] = fn key, [v1, v2], [type1, type2]
-	for key in ignore when object[key]?
-		delete object[key]
-	return object
+			out[key] = fn key, [v1, v2], [type(v1), type(v2)]
+	return out
 
 
 module.exports = Server
