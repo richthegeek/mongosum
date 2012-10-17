@@ -27,7 +27,7 @@
       throw 'MongoSum cannot get the schema of the schemas collection.';
     }
     criteria = {
-      collection: this.name
+      _collection: this.name
     };
     console.log('get schema', criteria);
     return this.db.schema.find(criteria).next(function(err, schema) {
@@ -74,9 +74,12 @@
     schema = {};
     schema_change_count = 0;
     update_schema = function(data) {
+      var s;
       schema_change_count++;
-      merge_schema(schema, get_schema(data));
-      return console.log(schema);
+      s = get_schema(data);
+      merge_schema(schema, s);
+      console.log(s, schema, schema_change_count);
+      return console.log('\n');
     };
     if (Object.prototype.toString.call(object) === '[object Array]') {
       complete = 0;
@@ -116,7 +119,7 @@
     });
   };
 
-  merge_schema = function(left, right, mode) {
+  merge_schema = function(left, right) {
     return walk_objects(left, right, function(key, vals, types) {
       if (!vals[0] && vals[1]) {
         vals[0] = vals[1];

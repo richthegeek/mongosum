@@ -49,9 +49,11 @@ Collection.prototype.insert = (object, callback) ->
 
 	update_schema = (data) ->
 		schema_change_count++
-		merge_schema schema, get_schema data
+		s = get_schema data
+		merge_schema schema, s
 
-		console.log schema
+		console.log s, schema, schema_change_count
+		console.log '\n'
 
 	if Object::toString.call(object) is '[object Array]'
 		complete = 0
@@ -78,7 +80,7 @@ get_schema = (object) ->
 			ret.min = ret.max = ret.sum = vals[0]
 		return ret
 
-merge_schema = (left, right, mode) ->
+merge_schema = (left, right) ->
 	walk_objects left, right, (key, vals, types) ->
 		if not vals[0] and vals[1]
 			vals[0] = vals[1]
