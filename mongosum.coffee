@@ -41,7 +41,7 @@ Collection.prototype.insert = (object, callback) ->
 		if schema_change_count > 0
 			@getSchema (err, full_schema) =>
 				full_schema = merge_schema full_schema, schema, sum: (a, b) -> $inc: b
-				console.log full_schema
+				console.log 'full', full_schema
 				throw 'NO MORE'
 				@setSchema full_schema, () ->
 					callback and callback err, data
