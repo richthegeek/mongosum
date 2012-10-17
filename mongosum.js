@@ -57,13 +57,7 @@
     var _this = this;
     if (schema_change_count > 0) {
       return this.getSchema(function(err, full_schema) {
-        full_schema = merge_schema(full_schema, schema, {
-          sum: function(a, b) {
-            return {
-              $inc: (b !== null ? b : a)
-            };
-          }
-        });
+        full_schema = merge_schema(full_schema, schema);
         return _this.setSchema(full_schema, function() {
           return callback && callback(err, data);
         });
