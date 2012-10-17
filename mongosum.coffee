@@ -22,11 +22,13 @@ Collection.prototype.getSchema = (callback) ->
 		console.log 'got schema', err, schema
 		callback err, schema
 
-Collection.prototype.setSchema = (callback) ->
+Collection.prototype.setSchema = (schema, callback) ->
 	if @name is 'schemas'
 		throw 'MongoSum cannot set the schema of the schemas collection'
 
-	criteria = collection: @name
+	criteria = _collection: @name
+	schema._collection = @name
+	@db.schema.update criteria, schema, true
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->

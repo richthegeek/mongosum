@@ -39,14 +39,16 @@
     });
   };
 
-  Collection.prototype.setSchema = function(callback) {
+  Collection.prototype.setSchema = function(schema, callback) {
     var criteria;
     if (this.name === 'schemas') {
       throw 'MongoSum cannot set the schema of the schemas collection';
     }
-    return criteria = {
-      collection: this.name
+    criteria = {
+      _collection: this.name
     };
+    schema._collection = this.name;
+    return this.db.schema.update(criteria, schema, true);
   };
 
   Collection.prototype._insert = Collection.prototype.insert;
