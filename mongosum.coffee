@@ -107,9 +107,10 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 
 	merge_opts =
 		min: (a, b) ->
-			console.log 'Full min', a, b
 			return (if b and b <= a then 0 else Math.min(a,b))
-		max: (a, b) -> return (if b and b >= a then 0 else Math.max(a,b))
+		max: (a, b) ->
+			console.log 'full max', a, b
+			return (if b and b >= a then 0 else Math.max(a,b))
 
 	@find(criteria).toArray (err, _originals = []) =>
 
@@ -143,7 +144,7 @@ get_schema = (object) ->
 		return ret
 
 merge_schema = (left, right, options = {}) ->
-	options.sum ?= (a, b) -> return a + b
+	options.sum ?= (a, b) -> return (parseInt(a, 10) + parseInt(b, 10)) or a
 	options.min ?= Math.min
 	options.max ?= Math.max
 

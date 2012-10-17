@@ -153,10 +153,10 @@
     };
     merge_opts = {
       min: function(a, b) {
-        console.log('Full min', a, b);
         return (b && b <= a ? 0 : Math.min(a, b));
       },
       max: function(a, b) {
+        console.log('full max', a, b);
         return (b && b >= a ? 0 : Math.max(a, b));
       }
     };
@@ -216,7 +216,7 @@
     }
     if ((_ref = options.sum) == null) {
       options.sum = function(a, b) {
-        return a + b;
+        return (parseInt(a, 10) + parseInt(b, 10)) || a;
       };
     }
     if ((_ref1 = options.min) == null) {
