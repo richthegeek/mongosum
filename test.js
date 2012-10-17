@@ -13,6 +13,7 @@
   coll.update({
     a: 'george'
   }, {
+    a: 'goerge',
     b: 50
   });
 
