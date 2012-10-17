@@ -166,6 +166,7 @@
     update_summary = function(err, data) {
       if (!err) {
         summary_change_count++;
+        console.log(this._summaryOptions);
         return merge_summary(summary, get_summary(data, this._summaryOptions));
       }
     };

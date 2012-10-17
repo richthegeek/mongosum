@@ -102,6 +102,7 @@ Collection.prototype.insert = (object, callback) ->
 	update_summary = (err, data) ->
 		if not err
 			summary_change_count++
+			console.log @_summaryOptions
 			merge_summary summary, get_summary data, @_summaryOptions
 
 	if Object::toString.call(object) isnt '[object Array]'
