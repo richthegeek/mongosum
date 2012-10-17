@@ -11,7 +11,8 @@
   coll = db.collection('test');
 
   coll.update({
-    a: 'george',
+    a: 'george'
+  }, {
     b: 50
   });
 
