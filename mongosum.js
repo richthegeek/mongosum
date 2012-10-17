@@ -78,7 +78,8 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var complete, obj, schema, schema_change_count, update_schema, _i, _len, _ref, _results;
+    var complete, obj, schema, schema_change_count, update_schema, _i, _len, _ref, _results,
+      _this = this;
     if (this.name === collection_name) {
       return Collection.prototype._insert.apply(this, arguments);
     }
@@ -99,7 +100,7 @@
       _results.push(this._insert(obj, function(err, data) {
         update_schema(err, data);
         if (++complete === object.length) {
-          return this._merge_schemas(err, data, callback, schema, schema_change_count);
+          return _this._merge_schemas(err, data, callback, schema, schema_change_count);
         }
       }));
     }
@@ -167,7 +168,8 @@
       upsert: !!upsert
     };
     return this.find(criteria).toArray(function(err, _originals) {
-      var complete, o, obj, originals, _i, _j, _len, _len1, _results;
+      var complete, o, obj, originals, _i, _j, _len, _len1, _results,
+        _this = this;
       if (_originals == null) {
         _originals = [];
       }
@@ -185,7 +187,7 @@
             subtract_schema(err, originals[data._id.toString()]);
             update_schema(err, data);
             if (++complete === object.length) {
-              return this._merge_schemas(err, data, callback, schema, schema_change_count);
+              return _this._merge_schemas(err, data, callback, schema, schema_change_count);
             }
           }
         }));

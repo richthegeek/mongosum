@@ -59,7 +59,7 @@ Collection.prototype.insert = (object, callback) ->
 
 	complete = 0
 	for obj in object
-		@_insert obj, (err, data) ->
+		@_insert obj, (err, data) =>
 			update_schema err, data
 			if ++complete is object.length
 				@_merge_schemas err, data, callback, schema, schema_change_count
@@ -113,7 +113,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 
 		complete = 0
 		for obj in object
-			@findAndModify options, obj, (err, data) ->
+			@findAndModify options, obj, (err, data) =>
 				if not err and data
 					subtract_schema err, originals[data._id.toString()]
 					update_schema err, data
