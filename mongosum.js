@@ -33,7 +33,7 @@
       if (schema == null) {
         schema = {};
       }
-      console.lgo('got schema', err, schema);
+      console.log('got schema', err, schema);
       return callback(err, schema);
     });
   };

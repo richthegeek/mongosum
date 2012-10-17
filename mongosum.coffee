@@ -19,7 +19,7 @@ Collection.prototype.getSchema = (callback) ->
 	console.log 'get schema', criteria
 
 	@db.schema.find(criteria).next (err, schema = {}) ->
-		console.lgo 'got schema', err, schema
+		console.log 'got schema', err, schema
 		callback err, schema
 
 Collection.prototype._insert = Collection.prototype.insert
