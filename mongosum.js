@@ -9,7 +9,7 @@
 
   Collection = require('mongolian/lib/collection.js');
 
-  collection_name = '_system.summaries';
+  collection_name = '_summaries';
 
   Server.prototype.defaultSummaryOptions = function(opts) {
     this._defaultSummaryOptions = opts || this._defaultSummaryOptions || {
@@ -101,10 +101,7 @@
       _collection: this.name
     };
     summary._collection = this.name;
-    return this.db.summary.update(criteria, summary, true, function() {
-      console.log(arguments);
-      return callback && callback.apply(this, arguments);
-    });
+    return this.db.summary.update(criteria, summary, true, callback);
   };
 
   /*
@@ -168,7 +165,6 @@
     update_summary = function(err, data) {
       if (!err) {
         summary_change_count++;
-        console.log(_this._summaryOptions);
         return merge_summary(summary, get_summary(data, _this._summaryOptions));
       }
     };

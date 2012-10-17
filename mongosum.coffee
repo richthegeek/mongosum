@@ -2,7 +2,7 @@ Server = require 'mongolian'
 DB = require 'mongolian/lib/db.js'
 Collection = require 'mongolian/lib/collection.js'
 
-collection_name = '_system.summaries'
+collection_name = '_summaries'
 
 Server.prototype.defaultSummaryOptions = (opts) ->
 	@_defaultSummaryOptions = opts or @_defaultSummaryOptions or {
@@ -61,9 +61,7 @@ Collection.prototype.setSummary = (summary, callback) ->
 
 	criteria = _collection: @name
 	summary._collection = @name
-	@db.summary.update criteria, summary, true, () ->
-		console.log arguments
-		callback and callback.apply this, arguments
+	@db.summary.update criteria, summary, true, callback
 
 ###
 # Do a full-table update of the summary. This is expensive.
@@ -102,7 +100,6 @@ Collection.prototype.insert = (object, callback) ->
 	update_summary = (err, data) =>
 		if not err
 			summary_change_count++
-			console.log @_summaryOptions
 			merge_summary summary, get_summary data, @_summaryOptions
 
 	if Object::toString.call(object) isnt '[object Array]'
