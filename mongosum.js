@@ -456,7 +456,7 @@
         return ((o != null) && o.constructor && o.constructor.name) || 'Null';
       };
       if (((_ref = type(v1)) === 'Object' || _ref === 'Array') && !(v1.type != null)) {
-        first[key] = walk_objects(v1, v2, fn);
+        first[key] = walk_objects(v1, v2, options, fn);
       } else {
         first[key] = fn(key, [v1, v2], [type(v1), type(v2)]);
       }

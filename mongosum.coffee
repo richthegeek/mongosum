@@ -279,7 +279,7 @@ walk_objects = (first, second = {}, options, fn) ->
 		type = (o) -> (o? and o.constructor and o.constructor.name) or 'Null'
 
 		if type(v1) in ['Object', 'Array'] and not v1.type?
-			first[key] = walk_objects v1, v2, fn
+			first[key] = walk_objects v1, v2, options, fn
 		else
 			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
 	for key in (options.ignored_columns or []) when first and first[key]
