@@ -12,11 +12,11 @@
 
   coll.insert([
     {
-      a: 'alice',
-      b: 42
-    }, {
       a: 'bob',
       b: 12
+    }, {
+      a: 'alice',
+      b: 42
     }
   ]);
 
