@@ -97,6 +97,7 @@
     if (this.name === collection_name) {
       throw 'MongoSum cannot set the summary of the summarys collection';
     }
+    console.log('Set Summary', this.name, summary);
     criteria = {
       _collection: this.name
     };
@@ -109,7 +110,7 @@
   */
 
 
-  Collection.prototype.updateSummary = function(callback) {
+  Collection.prototype.rebuildSummary = function(callback) {
     return this.getSummaryOptions(function() {
       var each, summary,
         _this = this;
