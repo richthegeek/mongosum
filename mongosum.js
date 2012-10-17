@@ -160,6 +160,7 @@
       upsert: !!upsert
     };
     console.log('UPDATE', options);
+    console.log(object);
     throw '...';
     return this.find(criteria).toArray(function(err, _originals) {
       var complete, o, obj, originals, _i, _j, _len, _len1, _results,
