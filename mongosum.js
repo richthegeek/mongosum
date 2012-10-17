@@ -111,16 +111,16 @@
 
 
   Collection.prototype.rebuildSummary = function(callback) {
+    var _this = this;
     return this.getSummaryOptions(function() {
-      var each, summary,
-        _this = this;
+      var each, summary;
       summary = {
-        _options: this._summaryOptions
+        _options: _this._summaryOptions
       };
       each = function(object) {
         return merge_summary(summary, get_summary(object, this._summaryOptions));
       };
-      return this.find().forEach(each, function() {
+      return _this.find().forEach(each, function() {
         return _this.setSummary(summary, callback);
       });
     });
@@ -166,8 +166,8 @@
     update_summary = function(err, data) {
       if (!err) {
         summary_change_count++;
-        console.log(this._summaryOptions);
-        return merge_summary(summary, get_summary(data, this._summaryOptions));
+        console.log(_this._summaryOptions);
+        return merge_summary(summary, get_summary(data, _this._summaryOptions));
       }
     };
     if (Object.prototype.toString.call(object) !== '[object Array]') {
@@ -212,7 +212,7 @@
     _ref = [{}, 0], summary = _ref[0], summary_change_count = _ref[1];
     subtract_summary = function(err, data) {
       if (!err && data) {
-        return merge_summary(summary, get_summary(data, this._summaryOptions), {
+        return merge_summary(summary, get_summary(data, _this._summaryOptions), {
           sum: function(a, b) {
             return (b === null && -a) || (a - b);
           },

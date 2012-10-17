@@ -69,7 +69,7 @@ Collection.prototype.setSummary = (summary, callback) ->
 # Do a full-table update of the summary. This is expensive.
 ###
 Collection.prototype.rebuildSummary = (callback) ->
-	@getSummaryOptions () ->
+	@getSummaryOptions () =>
 		summary = {_options: @_summaryOptions}
 
 		each = (object) -> merge_summary summary, get_summary object, @_summaryOptions
@@ -99,7 +99,7 @@ Collection.prototype.insert = (object, callback) ->
 		return Collection.prototype._insert.apply this, arguments
 
 	[summary, summary_change_count, options]  = [{}, 0, null]
-	update_summary = (err, data) ->
+	update_summary = (err, data) =>
 		if not err
 			summary_change_count++
 			console.log @_summaryOptions
@@ -135,7 +135,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	# Do a findAndModify
 	# If the update returns, subtract original and add updated
 	[summary, summary_change_count]  = [{}, 0]
-	subtract_summary = (err, data) ->
+	subtract_summary = (err, data) =>
 		if not err and data
 			merge_summary summary, (get_summary data, @_summaryOptions), {
 				sum: (a, b) -> return (b is null and -a) or (a - b)
@@ -211,7 +211,7 @@ Collection.prototype.remove = (criteria, callback) ->
 
 	summary = {}
 	summary_options = null
-	subtract_summary = (err, data) ->
+	subtract_summary = (err, data) =>
 	if not err and data
 		merge_summary summary, (get_summary data, @_summaryOptions), {
 			sum: (a, b) -> return (b is null and -a) or (a - b)
