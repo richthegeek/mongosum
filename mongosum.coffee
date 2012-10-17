@@ -240,7 +240,8 @@ walk_objects = (first, second = {}, fn) ->
 			first[key] = walk_objects v1, v2, fn
 		else
 			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
-	delete first[key] for key in ignore
+	for key in ignore when first[key]
+		delete first[key]
 	return first
 
 
