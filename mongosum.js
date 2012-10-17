@@ -39,12 +39,28 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    return this._insert(object, function(err, data) {
-      console.log('inserted');
-      console.log('    ', err);
-      console.log('    ', data);
-      return callback && callback.apply(this, arguments);
-    });
+    var complete, obj, _i, _len, _results;
+    if (Object.prototype.toString.call(object) === '[object Array]') {
+      complete = 0;
+      _results = [];
+      for (_i = 0, _len = object.length; _i < _len; _i++) {
+        obj = object[_i];
+        _results.push(this.insert(obj, function(err, data) {
+          complete++;
+          if (complete === count) {
+            return callback && callback.apply(this, arguments);
+          }
+        }));
+      }
+      return _results;
+    } else {
+      return this._insert(object, function(err, data) {
+        console.log('inserted');
+        console.log('    ', err);
+        console.log('    ', data);
+        return callback && callback.apply(this, arguments);
+      });
+    }
   };
 
   module.exports = Server;
