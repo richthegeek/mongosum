@@ -11,8 +11,8 @@
   coll = db.collection('test');
 
   coll.insert({
-    a: 'george',
-    b: 10
+    a: 'bob',
+    b: 15
   });
 
 }).call(this);
