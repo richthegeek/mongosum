@@ -247,7 +247,7 @@
   };
 
   walk_objects = function(first, second, fn) {
-    var ignore, k, key, keys, out, type, v, v1, v2, _i, _len, _ref;
+    var ignore, k, key, keys, type, v, v1, v2, _i, _j, _len, _len1, _ref;
     if (second == null) {
       second = {};
     }
@@ -267,7 +267,6 @@
       }
     }
     ignore = ['_c', '_h', '_id', '_t'];
-    out = {};
     for (_i = 0, _len = keys.length; _i < _len; _i++) {
       key = keys[_i];
       if (!(__indexOf.call(ignore, key) < 0)) {
@@ -279,12 +278,16 @@
         return ((o != null) && o.constructor && o.constructor.name) || 'Null';
       };
       if (((_ref = type(v1)) === 'Object' || _ref === 'Array') && !(v1.type != null)) {
-        out[key] = walk_objects(v1, v2, fn);
+        first[key] = walk_objects(v1, v2, fn);
       } else {
-        out[key] = fn(key, [v1, v2], [type(v1), type(v2)]);
+        first[key] = fn(key, [v1, v2], [type(v1), type(v2)]);
       }
     }
-    return out;
+    for (_j = 0, _len1 = ignore.length; _j < _len1; _j++) {
+      key = ignore[_j];
+      delete first[key];
+    }
+    return first;
   };
 
   module.exports = Server;

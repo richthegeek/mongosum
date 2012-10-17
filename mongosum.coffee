@@ -154,17 +154,17 @@ walk_objects = (first, second = {}, fn) ->
 	(keys.push k for k,v of second when k not in keys)
 
 	ignore = ['_c', '_h', '_id', '_t']
-	out = {}
 	for key in keys when key not in ignore
 		v1 = first[key]
 		v2 = second[key]
 		type = (o) -> (o? and o.constructor and o.constructor.name) or 'Null'
 
 		if type(v1) in ['Object', 'Array'] and not v1.type?
-			out[key] = walk_objects v1, v2, fn
+			first[key] = walk_objects v1, v2, fn
 		else
-			out[key] = fn key, [v1, v2], [type(v1), type(v2)]
-	return out
+			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
+	delete first[key] for key in ignore
+	return first
 
 
 module.exports = Server
