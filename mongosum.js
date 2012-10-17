@@ -74,7 +74,7 @@
     update_schema = function(data) {
       schema_change_count++;
       merge_schema(schema, get_schema(data));
-      return console.log('INSERTED', data, schema);
+      return console.log(schema);
     };
     if (Object.prototype.toString.call(object) === '[object Array]') {
       complete = 0;

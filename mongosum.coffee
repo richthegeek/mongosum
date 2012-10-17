@@ -49,7 +49,7 @@ Collection.prototype.insert = (object, callback) ->
 		schema_change_count++
 		merge_schema schema, get_schema data
 
-		console.log 'INSERTED', data, schema
+		console.log schema
 
 	if Object::toString.call(object) is '[object Array]'
 		complete = 0
