@@ -84,7 +84,7 @@ merge_schema = (left, right) ->
 	walk_objects left, right, (key, vals, types) ->
 		if not vals[0] and vals[1]
 			vals[0] = vals[1]
-			vals[1].sum = 0
+			vals[1].sum = vals[1].sum * 0.5
 		if vals[0]? and vals[0].type
 			if vals[0].type is 'Number'
 				if vals[1].min and vals[1].max and vals[1].sum
