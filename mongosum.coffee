@@ -103,8 +103,7 @@ get_schema = (object) ->
 			ret.min = ret.max = ret.sum = vals[0]
 		return ret
 
-merge_schema = (left, right, options) ->
-	options ?= {}
+merge_schema = (left, right, options = {}) ->
 	options.sum ?= (a, b) -> return a + b
 	options.min ?= Math.min
 	options.max ?= Math.max
@@ -114,13 +113,12 @@ merge_schema = (left, right, options) ->
 			vals[0] = JSON.parse JSON.stringify vals[1]
 			if vals[1].sum
 				vals[1].sum = 0
-		console.log vals[0], vals[1]
 		if vals[0]? and vals[0].type
-			if vals[0].type is 'Number'
-				if vals[1].min and vals[1].max and vals[1].sum
-					vals[0].min = options.min vals[0].min, vals[1].min
-					vals[0].max = options.max vals[0].max, vals[1].max
-					vals[0].sum = options.sum vals[0].sum, vals[1].sum
+			if vals[0].type is 'Number' and vals[1].type is 'Number'
+				console.log options.sum
+				vals[0].min = options.min vals[0].min, vals[1].min
+				vals[0].max = options.max vals[0].max, vals[1].max
+				vals[0].sum = options.sum vals[0].sum, vals[1].sum
 
 			vals[0].example = (vals[1] and vals[1].example) or vals[0].example
 		return vals[0]
