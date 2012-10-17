@@ -40,7 +40,7 @@ Collection.prototype.insert = (object, callback) ->
 	cb = (err, data, schema) =>
 		if schema_change_count > 0
 			@getSchema (err, full_schema) =>
-				full_schema = merge_schema full_schema, schema, sum: (a, b) -> $inc: b
+				full_schema = merge_schema full_schema, schema, sum: (a, b) -> $inc: (if b isnt null then b else a)
 				console.log 'full', full_schema
 				throw 'NO MORE'
 				@setSchema full_schema, () ->
@@ -112,10 +112,9 @@ merge_schema = (left, right, options = {}) ->
 		if not vals[0] and vals[1]
 			vals[0] = JSON.parse JSON.stringify vals[1]
 			if vals[1].sum
-				vals[1].sum = 0
+				vals[1].sum = null
 		if vals[0]? and vals[0].type
 			if vals[0].type is 'Number' and vals[1].type is 'Number'
-				console.log options.sum
 				vals[0].min = options.min vals[0].min, vals[1].min
 				vals[0].max = options.max vals[0].max, vals[1].max
 				vals[0].sum = options.sum vals[0].sum, vals[1].sum
