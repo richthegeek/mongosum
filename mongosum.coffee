@@ -40,7 +40,9 @@ Collection.prototype.insert = (object, callback) ->
 	cb = (err, data, schema) =>
 		if schema_change_count > 0
 			@getSchema (err, full_schema) =>
-				full_schema = merge_schema full_schema, schema
+				full_schema = merge_schema full_schema, schema, sum: (a, b) -> $inc: b
+				console.log full_schema
+				throw 'NO MORE'
 				@setSchema full_schema, () ->
 					callback and callback err, data
 		else
@@ -101,7 +103,12 @@ get_schema = (object) ->
 			ret.min = ret.max = ret.sum = vals[0]
 		return ret
 
-merge_schema = (left, right) ->
+merge_schema = (left, right, options) ->
+	options ?= {}
+	options.sum = (a, b) -> return a + b
+	options.min = Math.min
+	options.max = Math.max
+
 	walk_objects left, right, (key, vals, types) ->
 		if not vals[0] and vals[1]
 			vals[0] = vals[1]
@@ -110,9 +117,9 @@ merge_schema = (left, right) ->
 		if vals[0]? and vals[0].type
 			if vals[0].type is 'Number'
 				if vals[1].min and vals[1].max and vals[1].sum
-					vals[0].min = Math.min vals[0].min, vals[1].min
-					vals[0].max = Math.max vals[0].max, vals[1].max
-					vals[0].sum = vals[0].sum + vals[1].sum
+					vals[0].min = options.min vals[0].min, vals[1].min
+					vals[0].max = options.max vals[0].max, vals[1].max
+					vals[0].sum = options.sum vals[0].sum, vals[1].sum
 
 			vals[0].example = (vals[1] and vals[1].example) or vals[0].example
 		return vals[0]

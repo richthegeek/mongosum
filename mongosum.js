@@ -64,7 +64,15 @@
     cb = function(err, data, schema) {
       if (schema_change_count > 0) {
         return _this.getSchema(function(err, full_schema) {
-          full_schema = merge_schema(full_schema, schema);
+          full_schema = merge_schema(full_schema, schema, {
+            sum: function(a, b) {
+              return {
+                $inc: b
+              };
+            }
+          });
+          console.log(full_schema);
+          throw 'NO MORE';
           return _this.setSchema(full_schema, function() {
             return callback && callback(err, data);
           });
@@ -145,7 +153,15 @@
     });
   };
 
-  merge_schema = function(left, right) {
+  merge_schema = function(left, right, options) {
+    if (options == null) {
+      options = {};
+    }
+    options.sum = function(a, b) {
+      return a + b;
+    };
+    options.min = Math.min;
+    options.max = Math.max;
     return walk_objects(left, right, function(key, vals, types) {
       if (!vals[0] && vals[1]) {
         vals[0] = vals[1];
@@ -156,9 +172,9 @@
       if ((vals[0] != null) && vals[0].type) {
         if (vals[0].type === 'Number') {
           if (vals[1].min && vals[1].max && vals[1].sum) {
-            vals[0].min = Math.min(vals[0].min, vals[1].min);
-            vals[0].max = Math.max(vals[0].max, vals[1].max);
-            vals[0].sum = vals[0].sum + vals[1].sum;
+            vals[0].min = options.min(vals[0].min, vals[1].min);
+            vals[0].max = options.max(vals[0].max, vals[1].max);
+            vals[0].sum = options.sum(vals[0].sum, vals[1].sum);
           }
         }
         vals[0].example = (vals[1] && vals[1].example) || vals[0].example;
