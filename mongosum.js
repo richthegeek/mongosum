@@ -41,40 +41,46 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var _this = this;
-    return this.getSchema(function(err, schema) {
-      var cb, complete, obj, update_schema, _i, _len, _results;
-      cb = function(err, data, schema) {
-        return callback && callback(err, data);
-      };
-      update_schema = function(data) {
-        console.log('INSERTED', data);
-        return console.log('SCHEMA:', schema);
-      };
-      if (Object.prototype.toString.call(object) === '[object Array]') {
-        complete = 0;
-        _results = [];
-        for (_i = 0, _len = object.length; _i < _len; _i++) {
-          obj = object[_i];
-          _results.push(_this._insert(obj, function(err, data) {
-            if (!err) {
-              update_schema(data);
-            }
-            if (++complete === object.length) {
-              return cb(err, data, schema);
-            }
-          }));
-        }
-        return _results;
-      } else {
-        return _this._insert(object, function(err, data) {
+    var cb, complete, merge_schema, obj, schema, update_schema, _i, _len, _results;
+    cb = function(err, data, schema) {
+      var _this = this;
+      return this.getSchema(function(err, full_schema) {
+        full_schema = merge_schema(full_schema, schema);
+        return _this.setSchema(full_schema, function() {
+          return callback && callback(err, data);
+        });
+      });
+    };
+    schema = {};
+    merge_schema = function(left, right) {
+      return console.log('MERGE');
+    };
+    update_schema = function(data) {
+      return console.log('INSERTED', data);
+    };
+    if (Object.prototype.toString.call(object) === '[object Array]') {
+      complete = 0;
+      _results = [];
+      for (_i = 0, _len = object.length; _i < _len; _i++) {
+        obj = object[_i];
+        _results.push(this._insert(obj, function(err, data) {
           if (!err) {
             update_schema(data);
           }
-          return cb(err, data, schema);
-        });
+          if (++complete === object.length) {
+            return cb(err, data, schema);
+          }
+        }));
       }
-    });
+      return _results;
+    } else {
+      return this._insert(object, function(err, data) {
+        if (!err) {
+          update_schema(data);
+        }
+        return cb(err, data, schema);
+      });
+    }
   };
 
   module.exports = Server;
