@@ -159,15 +159,15 @@
       "new": true,
       upsert: !!upsert
     };
-    console.log('UPDATE', options);
-    console.log(object);
-    throw '...';
     return this.find(criteria).toArray(function(err, _originals) {
       var complete, o, obj, originals, _i, _j, _len, _len1, _results,
         _this = this;
       if (_originals == null) {
         _originals = [];
       }
+      console.log('found');
+      console.log(err, _originals);
+      throw '...';
       originals = {};
       for (_i = 0, _len = _originals.length; _i < _len; _i++) {
         o = _originals[_i];
