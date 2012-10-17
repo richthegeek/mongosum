@@ -109,8 +109,8 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		min: (a, b) ->
 			return (if b and b <= a then 0 else Math.min(a,b))
 		max: (a, b) ->
-			console.log 'full max', a, b, (not a), (b and b >= a), Math.max(a,b)
-			return (if not a or (b and (b >= a)) then 0 else Math.max(a,b))
+			console.log 'full max', a, b, isNaN(parseInt(a)), (b and b >= a), Math.max(a,b)
+			return (if isNaN(parseInt(a)) or (b and (b >= a)) then 0 else Math.max(a,b))
 
 	@find(criteria).toArray (err, _originals = []) =>
 
