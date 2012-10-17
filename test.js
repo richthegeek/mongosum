@@ -14,7 +14,7 @@
     a: 'george'
   }, {
     a: 'george',
-    b: 60
+    b: 50
   });
 
 }).call(this);

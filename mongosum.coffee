@@ -83,7 +83,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	[schema, schema_change_count]  = [{}, 0]
 	subtract_schema = (err, data) ->
 		if not err and data
-			merge_schema schema, (get_schema data),
+			merge_schema schema, (get_schema data), {
 				sum: (a, b) -> return (b is null and -a) or (a - b)
 				min: (a, b) ->
 					console.log 'min', a, b
@@ -91,6 +91,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 				max: (a, b) ->
 					console.log 'max', a, b
 					a
+			}
 
 	update_schema = (err, data) ->
 		if not err and data
