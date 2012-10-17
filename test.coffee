@@ -1,4 +1,4 @@
-mongo = require './mongosum.coffee'
+mongo = require './mongosum.js'
 
 dbms = new mongo
 
