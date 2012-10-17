@@ -58,7 +58,7 @@
       _this = this;
     console.log('insert');
     if (this.name === 'schemas') {
-      return;
+      return Collection.prototype._insert.apply(this, arguments);
     }
     cb = function(err, data, schema) {
       if (schema_change_count > 0) {
@@ -106,6 +106,9 @@
   Collection.prototype._update = Collection.prototype.update;
 
   Collection.prototype.update = function(criteria, object, upsert, multi, callback) {
+    if (this.name === 'schema') {
+      return Collection.prototype._update.apply(this, arguments);
+    }
     console.log('update');
     if (!callback && typeof multi === 'function') {
       callback = multi;

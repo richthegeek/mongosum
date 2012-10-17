@@ -34,7 +34,7 @@ Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
 	console.log 'insert'
 	if @name is 'schemas'
-		return
+		return Collection.prototype._insert.apply this, arguments
 
 	cb = (err, data, schema) =>
 		if schema_change_count > 0
@@ -69,6 +69,9 @@ Collection.prototype.insert = (object, callback) ->
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
+	if @name is 'schema'
+		return Collection.prototype._update.apply this, arguments
+
 	console.log 'update'
 	if not callback and typeof multi is 'function'
 		callback = multi
