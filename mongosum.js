@@ -173,7 +173,7 @@
       if (!vals[0] && vals[1]) {
         vals[0] = vals[1];
         if (vals[1].sum) {
-          vals[1].sum = vals[1].sum * 0.5;
+          vals[1].sum = 0;
         }
       }
       if ((vals[0] != null) && vals[0].type) {
