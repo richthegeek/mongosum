@@ -123,6 +123,7 @@
       if (!err && data) {
         return merge_schema(schema, get_schema(data), {
           sum: function(a, b) {
+            console.log('neg sum', a, b);
             return a - b;
           },
           min: function(a, b) {
