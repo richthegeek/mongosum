@@ -117,7 +117,11 @@
       throw 'Callback is not a function!';
     }
     return this._update(criteria, object, upsert, multi, function(err, data) {
-      console.log('UPDATE', arguments);
+      try {
+        throw '...';
+      } catch (e) {
+        console.log(e.stack);
+      }
       return callback && callback.apply(this, arguments);
     });
   };

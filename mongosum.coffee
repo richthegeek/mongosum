@@ -78,7 +78,10 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		throw 'Callback is not a function!'
 
 	@_update criteria, object, upsert, multi, (err, data) ->
-		console.log 'UPDATE', arguments
+		try
+			throw '...'
+		catch e
+			console.log e.stack
 		callback and callback.apply this, arguments
 
 
