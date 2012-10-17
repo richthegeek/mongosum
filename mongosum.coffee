@@ -69,7 +69,7 @@ Collection.prototype.insert = (object, callback) ->
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
-	if @name is 'schema'
+	if @name is 'schemas'
 		return Collection.prototype._update.apply this, arguments
 
 	console.log 'update'

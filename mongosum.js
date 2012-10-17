@@ -106,7 +106,7 @@
   Collection.prototype._update = Collection.prototype.update;
 
   Collection.prototype.update = function(criteria, object, upsert, multi, callback) {
-    if (this.name === 'schema') {
+    if (this.name === 'schemas') {
       return Collection.prototype._update.apply(this, arguments);
     }
     console.log('update');
