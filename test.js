@@ -10,8 +10,9 @@
 
   coll = db.collection('test');
 
-  coll.updateSchema(function() {
-    return console.log('done');
+  coll.insert({
+    a: 'george',
+    b: 10
   });
 
 }).call(this);

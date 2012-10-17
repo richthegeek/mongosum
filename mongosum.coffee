@@ -2,80 +2,116 @@ Server = require 'mongolian'
 DB = require 'mongolian/lib/db.js'
 Collection = require 'mongolian/lib/collection.js'
 
-collection_name = 'schemas'
+collection_name = 'system.summaries'
+
+Server.prototype.defaultSummaryOptions = (opts) ->
+	@_defaultSummaryOptions = opts or @_defaultSummaryOptions or {
+		ignored_columns: []
+	}
+	return @_defaultSummaryOptions
+
+DB.prototype.defaultSummaryOptions = () ->
+	@server.defaultSummaryOptions.apply this, arguments
+Collection.prototype.defaultSummaryOptions = () ->
+	@db.server.defaultSummaryOptions.apply this, arguments
+
 
 Server.prototype.db = (name) ->
 	if not @_dbs[name]?
 		@_dbs[name] = new DB @, name
-		@_dbs[name].schema = new Collection @_dbs[name], collection_name
+		@_dbs[name].summary = new Collection @_dbs[name], collection_name
 	return @_dbs[name]
 
 DB.prototype.collection = (name) ->
 	return @_collections[name] or (@_collections[name] = new Collection @, name)
 
+
+Collection.prototype.getSummaryOptions = (options, callback) ->
+	if not @_summaryOptions
+		@getSummary (err, summary) =>
+			callback @_summaryOptions = summary._options
+	else
+		callback @_summaryOptions
+
+Collection.prototype.setSummaryOptions = (options, callback) ->
+	@getSummary (err, summary) =>
+		summary._options = options
+		@setSummary summary, callback
+
 ###
-# Retrieve the schema for this collection
+# Retrieve the summary for this collection
 ###
-Collection.prototype.getSchema = (callback) ->
+Collection.prototype.getSummary = (callback) ->
 	if @name is collection_name
-		throw 'MongoSum cannot get the schema of the schemas collection.'
+		throw 'MongoSum cannot get the summary of the summarys collection.'
 
 	criteria = _collection: @name
-	@db.schema.find(criteria).next (err, schema = {}) ->
-		callback err, schema
+	@db.summary.find(criteria).next (err, summary = {}) =>
+		summary._collection ?= @name
+		summary._options ?= @defaultSummaryOptions()
+		@_summaryOptions = summary._options
+		callback err, summary
 
 ###
-# Set the schema for this collection (used internally)
+# Set the summary for this collection (used internally)
 ###
-Collection.prototype.setSchema = (schema, callback) ->
+Collection.prototype.setSummary = (summary, callback) ->
 	if @name is collection_name
-		throw 'MongoSum cannot set the schema of the schemas collection'
+		throw 'MongoSum cannot set the summary of the summarys collection'
 
 	criteria = _collection: @name
-	schema._collection = @name
-	@db.schema.update criteria, schema, true, callback
+	summary._collection = @name
+	@db.summary.update criteria, summary, true, callback
 
 ###
-# Do a full-table update of the schema. This is expensive.
+# Do a full-table update of the summary. This is expensive.
 ###
-Collection.prototype.updateSchema = (callback) ->
-	schema = {}
-	each = (object) -> merge_schema schema, get_schema object
-	@find().forEach each, () =>
-		@setSchema schema, callback
+Collection.prototype.updateSummary = (callback) ->
+	@getSummaryOptions () ->
+		summary = {_options: @_summaryOptions}
+
+		each = (object) -> merge_summary summary, get_summary object, @_summaryOptions
+		@find().forEach each, () =>
+			@setSummary summary, callback
 
 ###
-# INTERNAL. Merge schema, save it, and fire the callback.
+# INTERNAL. Merge summary, save it, and fire the callback.
 ###
-Collection.prototype._merge_schemas = (err, data, callback, options, schema, schema_change_count) ->
-	if schema_change_count > 0
-		@getSchema (err, full_schema) =>
-			full_schema = merge_schema full_schema, schema, options
-			@setSchema full_schema, () ->
+Collection.prototype._merge_summarys = (err, data, callback, options, summary, summary_change_count) ->
+	if summary_change_count > 0
+		@getSummary (err, full_summary) =>
+			full_summary = merge_summary full_summary, summary, options
+			@setSummary full_summary, () ->
 				callback and callback err, data
 	else
 		callback and callback err, data
+
+Collection.prototype._drop = Collection.prototype.drop
+Collection.prototype.drop = () ->
+	@db.summary.remove _collection: @name
+	@_drop.apply this, arguments
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
 	if @name is collection_name
 		return Collection.prototype._insert.apply this, arguments
 
-	[schema, schema_change_count]  = [{}, 0]
-	update_schema = (err, data) ->
+	[summary, summary_change_count, options]  = [{}, 0, null]
+	update_summary = (err, data) ->
 		if not err
-			schema_change_count++
-			merge_schema schema, get_schema data
+			summary_change_count++
+			merge_summary summary, get_summary data, @_summaryOptions
 
 	if Object::toString.call(object) isnt '[object Array]'
 		object = [object]
 
-	complete = 0
-	for obj in object
-		@_insert obj, (err, data) =>
-			update_schema err, data
-			if ++complete is object.length
-				@_merge_schemas err, data, callback, {}, schema, schema_change_count
+	@getSummaryOptions () =>
+		complete = 0
+		for obj in object
+			@_insert obj, (err, data) =>
+				update_summary err, data
+				if ++complete is object.length
+					@_merge_summarys err, data, callback, {}, summary, summary_change_count
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
@@ -95,19 +131,19 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	# Do a find on the criteria specified
 	# Do a findAndModify
 	# If the update returns, subtract original and add updated
-	[schema, schema_change_count]  = [{}, 0]
-	subtract_schema = (err, data) ->
+	[summary, summary_change_count]  = [{}, 0]
+	subtract_summary = (err, data) ->
 		if not err and data
-			merge_schema schema, (get_schema data), {
+			merge_summary summary, (get_summary data, @_summaryOptions), {
 				sum: (a, b) -> return (b is null and -a) or (a - b)
 				min: (a, b) -> a
 				max: (a, b) -> a
 			}
 
-	update_schema = (err, data) ->
+	update_summary = (err, data) =>
 		if not err and data
-			schema_change_count++
-			merge_schema schema, get_schema data
+			summary_change_count++
+			merge_summary summary, get_summary data, @_summaryOptions
 
 	if Object::toString.call(object) isnt '[object Array]'
 		object = [object]
@@ -131,45 +167,50 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 			return Math.max a, b
 
 
-	@find(criteria).toArray (err, _originals = []) =>
-		originals = {}
-		originals[o._id.toString()] = o for o in _originals
-		for_merge = []
-		complete = 0
-		for obj in object
-			opts =
-				criteria: criteria
-				update: obj
-				options: options
-				remove: false
-				new: true
-				upsert: !!upsert
+	@getSummaryOptions () =>
+		@find(criteria).toArray (err, _originals = []) =>
+			originals = {}
+			originals[o._id.toString()] = o for o in _originals
+			for_merge = []
+			complete = 0
+			for obj in object
+				opts =
+					criteria: criteria
+					update: obj
+					options: options
+					remove: false
+					new: true
+					upsert: !!upsert
 
-			@findAndModify opts, (err, data) =>
-				if not err and data
-					subtract_schema err, originals[data._id.toString()]
-					if not err
-						for_merge.push data
-					if ++complete is object.length
-						try
-							update_schema null, data for data in for_merge
-							@_merge_schemas err, data, callback, merge_opts, schema, schema_change_count
-						catch e
-							if e is 'FULL UPDATE'
-								@updateSchema callback
-							else
-								throw e
+				@findAndModify opts, (err, data) =>
+					if not err and data
+						subtract_summary err, originals[data._id.toString()]
+						if not err
+							for_merge.push data
+						if ++complete is object.length
+							try
+								update_summary null, data for data in for_merge
+								@_merge_summarys err, data, callback, merge_opts, summary, summary_change_count
+							catch e
+								if e is 'FULL UPDATE'
+									@updateSummary callback
+								else
+									throw e
 
 Collection.prototype._remove = Collection.prototype.remove
 Collection.prototype.remove = (criteria, callback) ->
+	if @name is collection_name
+		return Collection.prototype._update.apply this, arguments
+
 	if not callback and typeof criteria is 'function'
 		callback = criteria
 		criteria = {}
 
-	schema = {}
-	subtract_schema = (err, data) ->
+	summary = {}
+	summary_options = null
+	subtract_summary = (err, data) ->
 	if not err and data
-		merge_schema schema, (get_schema data), {
+		merge_summary summary, (get_summary data, @_summaryOptions), {
 			sum: (a, b) -> return (b is null and -a) or (a - b)
 			min: (a, b) -> a
 			max: (a, b) -> a
@@ -184,23 +225,24 @@ Collection.prototype.remove = (criteria, callback) ->
 				throw 'FULL UPDATE'
 			return Math.max a, b
 
-	@find(criteria).toArray (err, data) =>
-		data = data or []
-		for row in data
-			subtract_schema err, row
-		try
-			if data.length > 0
-				@_merge_schemas err, data, (() -> null), merge_opts, schema, 1
-			@_remove criteria, callback
-		catch e
-			if e is 'FULL UPDATE'
-				@updateSchema callback
-			else
-				throw e
+	@getSummaryOptions () =>
+		@find(criteria).toArray (err, data) =>
+			data = data or []
+			for row in data
+				subtract_summary err, row
+			try
+				if data.length > 0
+					@_merge_summarys err, data, (() -> null), merge_opts, summary, 1
+				@_remove criteria, callback
+			catch e
+				if e is 'FULL UPDATE'
+					@updateSummary callback
+				else
+					throw e
 
 
-get_schema = (object) ->
-	walk_objects object, {}, (key, vals, types) ->
+get_summary = (object, options) ->
+	walk_objects object, {}, options, (key, vals, types) ->
 		ret = {}
 		ret.type = types[0]
 		ret.example = vals[0]
@@ -208,12 +250,12 @@ get_schema = (object) ->
 			ret.min = ret.max = ret.sum = vals[0]
 		return ret
 
-merge_schema = (left, right, options = {}) ->
+merge_summary = (left, right, options = {}) ->
 	options.sum ?= (a, b) -> return (parseInt(a, 10) + parseInt(b, 10)) or a
 	options.min ?= Math.min
 	options.max ?= Math.max
 
-	walk_objects left, right, (key, vals, types) ->
+	walk_objects left, right, {}, (key, vals, types) ->
 		if not vals[0] and vals[1]
 			vals[0] = JSON.parse JSON.stringify vals[1]
 			if vals[1].sum then vals[1].sum = null
@@ -226,11 +268,11 @@ merge_schema = (left, right, options = {}) ->
 			vals[0].example = (vals[1] and vals[1].example) or vals[0].example
 		return vals[0]
 
-walk_objects = (first, second = {}, fn) ->
+walk_objects = (first, second = {}, options, fn) ->
 	keys = (k for k,v of first)
 	(keys.push k for k,v of second when k not in keys)
 
-	ignore = ['_c', '_h', '_id', '_t']
+	ignore = options.ignored_columns or []
 	for key in keys when key not in ignore
 		v1 = first[key]
 		v2 = second[key]
@@ -240,7 +282,7 @@ walk_objects = (first, second = {}, fn) ->
 			first[key] = walk_objects v1, v2, fn
 		else
 			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
-	for key in ignore when first and first[key]
+	for key in (options.ignored_columns or []) when first and first[key]
 		delete first[key]
 	return first
 
