@@ -18,10 +18,7 @@ Collection.prototype.getSchema = (callback) ->
 		throw 'MongoSum cannot get the schema of the schemas collection.'
 
 	criteria = _collection: @name
-	console.log 'get schema', criteria
-
 	@db.schema.find(criteria).next (err, schema = {}) ->
-		console.log 'got schema', err, schema
 		callback err, schema
 
 Collection.prototype.setSchema = (schema, callback) ->
@@ -106,11 +103,9 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		upsert: !! upsert
 
 	merge_opts =
-		min: (a, b) ->
-			return (if b and b <= a then 0 else Math.min(a,b))
-		max: (a, b) ->
-			console.log 'full max', a, b, isNaN(parseInt(a)), (b and b >= a), Math.max(a,b)
-			return (if isNaN(parseInt(a)) or (b and (b >= a)) then 0 else Math.max(a,b))
+		min: (a, b) -> return (if isNaN(parseInt(a)) or (b == a) then null else Math.min(a,b))
+		max: (a, b) -> return (if isNaN(parseInt(a)) or (b == a) then null else Math.max(a,b))
+
 
 	@find(criteria).toArray (err, _originals = []) =>
 

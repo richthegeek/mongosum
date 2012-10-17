@@ -31,12 +31,10 @@
     criteria = {
       _collection: this.name
     };
-    console.log('get schema', criteria);
     return this.db.schema.find(criteria).next(function(err, schema) {
       if (schema == null) {
         schema = {};
       }
-      console.log('got schema', err, schema);
       return callback(err, schema);
     });
   };
@@ -153,11 +151,10 @@
     };
     merge_opts = {
       min: function(a, b) {
-        return (b && b <= a ? 0 : Math.min(a, b));
+        return (isNaN(parseInt(a)) || (b === a) ? null : Math.min(a, b));
       },
       max: function(a, b) {
-        console.log('full max', a, b, isNaN(parseInt(a)), b && b >= a, Math.max(a, b));
-        return (isNaN(parseInt(a)) || (b && (b >= a)) ? 0 : Math.max(a, b));
+        return (isNaN(parseInt(a)) || (b === a) ? null : Math.max(a, b));
       }
     };
     return this.find(criteria).toArray(function(err, _originals) {
