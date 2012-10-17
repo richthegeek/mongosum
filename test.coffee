@@ -5,7 +5,7 @@ dbms = new mongo
 db = dbms.db 'mongosum_test'
 coll = db.collection 'test'
 
-# coll.insert [{a: 'bob', b: 12}, {a: 'alice', b: 42}]
-# coll.insert {a: 'george', b: 60}
+coll.insert [{a: 'bob', b: 12}, {a: 'alice', b: 42}]
+coll.insert {a: 'george', b: 60}
 
-coll.update {a: 'george'}, {a: 'goerge', b: 50}
+# coll.update {a: 'george'}, {a: 'goerge', b: 50}
