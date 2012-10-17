@@ -100,7 +100,6 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		object = [object.shift()]
 
 	options =
-		query: criteria
 		remove: false
 		new: true
 		upsert: !! upsert
@@ -112,7 +111,15 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 
 		complete = 0
 		for obj in object
-			@findAndModify options, obj, (err, data) =>
+			opts =
+				criteria: criteria
+				update: obj
+				options: options
+				remove: false
+				new: true
+				upsert: !!upsert
+
+			@findAndModify opts, (err, data) =>
 				console.log 'modified', data
 				if not err and data
 					subtract_schema err, originals[data._id.toString()]

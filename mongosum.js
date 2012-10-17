@@ -155,13 +155,12 @@
       object = [object.shift()];
     }
     options = {
-      query: criteria,
       remove: false,
       "new": true,
       upsert: !!upsert
     };
     return this.find(criteria).toArray(function(err, _originals) {
-      var complete, o, obj, originals, _i, _j, _len, _len1, _results;
+      var complete, o, obj, opts, originals, _i, _j, _len, _len1, _results;
       if (_originals == null) {
         _originals = [];
       }
@@ -174,7 +173,15 @@
       _results = [];
       for (_j = 0, _len1 = object.length; _j < _len1; _j++) {
         obj = object[_j];
-        _results.push(_this.findAndModify(options, obj, function(err, data) {
+        opts = {
+          criteria: criteria,
+          update: obj,
+          options: options,
+          remove: false,
+          "new": true,
+          upsert: !!upsert
+        };
+        _results.push(_this.findAndModify(opts, function(err, data) {
           console.log('modified', data);
           if (!err && data) {
             subtract_schema(err, originals[data._id.toString()]);
