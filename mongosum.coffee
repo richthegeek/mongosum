@@ -16,8 +16,10 @@ Collection.prototype.getSchema = (callback) ->
 		throw 'MongoSum cannot get the schema of the schemas collection.'
 
 	criteria = collection: @name
+	console.log 'get schema', criteria
 
 	@db.schema.find criteria, (err, schema = {}) ->
+		console.lgo 'got schema', err, schema
 		callback err, schema
 
 Collection.prototype._insert = Collection.prototype.insert

@@ -28,10 +28,12 @@
     criteria = {
       collection: this.name
     };
+    console.log('get schema', criteria);
     return this.db.schema.find(criteria, function(err, schema) {
       if (schema == null) {
         schema = {};
       }
+      console.lgo('got schema', err, schema);
       return callback(err, schema);
     });
   };
