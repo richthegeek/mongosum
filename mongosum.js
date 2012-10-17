@@ -9,11 +9,11 @@
 
   Collection = require('mongolian/lib/collection.js');
 
-  collection_name = 'system.summaries';
+  collection_name = '_system.summaries';
 
   Server.prototype.defaultSummaryOptions = function(opts) {
     this._defaultSummaryOptions = opts || this._defaultSummaryOptions || {
-      ignored_columns: []
+      ignored_columns: ['_id']
     };
     return this._defaultSummaryOptions;
   };

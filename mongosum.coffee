@@ -2,11 +2,11 @@ Server = require 'mongolian'
 DB = require 'mongolian/lib/db.js'
 Collection = require 'mongolian/lib/collection.js'
 
-collection_name = 'system.summaries'
+collection_name = '_system.summaries'
 
 Server.prototype.defaultSummaryOptions = (opts) ->
 	@_defaultSummaryOptions = opts or @_defaultSummaryOptions or {
-		ignored_columns: []
+		ignored_columns: ['_id']
 	}
 	return @_defaultSummaryOptions
 
