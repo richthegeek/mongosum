@@ -29,7 +29,7 @@
       collection: this.name
     };
     console.log('get schema', criteria);
-    return this.db.schema.find(criteria, function(err, schema) {
+    return this.db.schema.find(criteria).next(function(err, schema) {
       if (schema == null) {
         schema = {};
       }
