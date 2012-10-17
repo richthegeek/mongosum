@@ -34,7 +34,6 @@ Collection.prototype.setSchema = (schema, callback) ->
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
-	console.log 'insert'
 	if @name is collection_name
 		return Collection.prototype._insert.apply this, arguments
 

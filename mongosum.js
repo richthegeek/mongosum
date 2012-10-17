@@ -58,7 +58,6 @@
   Collection.prototype.insert = function(object, callback) {
     var cb, complete, obj, schema, schema_change_count, update_schema, _i, _len, _results,
       _this = this;
-    console.log('insert');
     if (this.name === collection_name) {
       return Collection.prototype._insert.apply(this, arguments);
     }
