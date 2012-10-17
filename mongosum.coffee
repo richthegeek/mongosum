@@ -85,11 +85,13 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		if not err and data
 			merge_schema schema, (get_schema data), {
 				sum: (a, b) ->
-					console.log('neg sum', a, b)
 					return (b is null and -a) or (a - b)
 				min: (a, b) ->
+					console.log 'neg min', a, b
 					(if a <= b then null else a)
-				max: (a, b) -> (if a >= b then null else b)
+				max: (a, b) ->
+					console.log 'neg max', a, b
+					(if a >= b then null else b)
 			}
 			console.log 'done', schema
 
