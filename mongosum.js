@@ -156,8 +156,8 @@
         return (b && b <= a ? 0 : Math.min(a, b));
       },
       max: function(a, b) {
-        console.log('full max', a, b);
-        return (b && b >= a ? 0 : Math.max(a, b));
+        console.log('full max', a, b, !a, b && b >= a, Math.max(a, b));
+        return (!a || (b && (b >= a)) ? 0 : Math.max(a, b));
       }
     };
     return this.find(criteria).toArray(function(err, _originals) {
