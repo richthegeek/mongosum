@@ -67,8 +67,8 @@ Collection.prototype.insert = (object, callback) ->
 			cb err, data, schema
 
 
-get_schema: (object) ->
-	@walk_objects object, {}, (key, vals, types) ->
+get_schema = (object) ->
+	walk_objects object, {}, (key, vals, types) ->
 		ret = {}
 		ret.type = types[0]
 		ret.example = vals[0]
@@ -76,25 +76,21 @@ get_schema: (object) ->
 			ret.min = ret.max = ret.sum = vals[0]
 		return ret
 
-merge_schema: (left, right) ->
-	@walk_objects left, right, (key, vals, types) ->
+merge_schema = (left, right, mode) ->
+	walk_objects left, right, (key, vals, types) ->
 		if not vals[0] and vals[1]
 			vals[0] = vals[1]
 		if vals[0]? and vals[0].type
 			if vals[0].type is 'Number'
-				debug 'walk', arguments
 				if vals[1].min and vals[1].max and vals[1].sum
-					debug 'min exists', arguments
 					vals[0].min = Math.min vals[0].min, vals[1].min
 					vals[0].max = Math.max vals[0].max, vals[1].max
 					vals[0].sum = vals[0].sum + vals[1].sum
-				else
-					debug 'no min', arguments
 
 			vals[0].example = (vals[1] and vals[1].example) or vals[0].example
 		return vals[0]
 
-walk_objects: (object, second = {}, fn) ->
+walk_objects = (object, second = {}, fn) ->
 	keys = (k for k,v of object)
 	(keys.push k for k,v of second when k not in keys)
 
@@ -106,7 +102,7 @@ walk_objects: (object, second = {}, fn) ->
 		type2 = (v2 and v2.constructor.name) or 'Null'
 
 		if type1 in ['Object', 'Array'] and not v1.type?
-			object[key] = @walk_objects v1, v2, fn
+			object[key] = walk_objects v1, v2, fn
 		else
 			object[key] = fn key, [v1, v2], [type1, type2]
 	for key in ignore when object[key]?
