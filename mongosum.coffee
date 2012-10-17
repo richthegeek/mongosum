@@ -79,7 +79,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 
 	@_update criteria, object, upsert, multi, (err, data) ->
 		try
-			throw '...'
+			an.update.occurred++
 		catch e
 			console.log e.stack
 		callback and callback.apply this, arguments

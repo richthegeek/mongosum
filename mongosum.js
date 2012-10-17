@@ -118,7 +118,7 @@
     }
     return this._update(criteria, object, upsert, multi, function(err, data) {
       try {
-        throw '...';
+        an.update.occurred++;
       } catch (e) {
         console.log(e.stack);
       }
