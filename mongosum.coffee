@@ -110,8 +110,8 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		upsert: !! upsert
 
 	merge_opts =
-		min: (a, b) -> return (if b <= a then null) or Math.min(a,b)
-		max: (a, b) -> return (if b >= a then null) or Math.max(a,b)
+		min: (a, b) -> return (if b <= a then null else Math.min(a,b))
+		max: (a, b) -> return (if b >= a then null else Math.max(a,b))
 
 	@find(criteria).toArray (err, _originals = []) =>
 

@@ -155,10 +155,10 @@
     };
     merge_opts = {
       min: function(a, b) {
-        return (b <= a ? null : void 0) || Math.min(a, b);
+        return (b <= a ? null : Math.min(a, b));
       },
       max: function(a, b) {
-        return (b >= a ? null : void 0) || Math.max(a, b);
+        return (b >= a ? null : Math.max(a, b));
       }
     };
     return this.find(criteria).toArray(function(err, _originals) {
