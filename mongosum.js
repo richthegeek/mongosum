@@ -147,8 +147,10 @@
     };
     merge_opts = {
       min: function(a, b) {
-        console.log('min', a, b);
-        return a;
+        return (b <= a ? null : void 0) || a;
+      },
+      max: function(a, b) {
+        return (b >= a ? null : void 0) || a;
       }
     };
     return this.find(criteria).toArray(function(err, _originals) {
