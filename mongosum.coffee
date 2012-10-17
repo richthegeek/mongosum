@@ -26,6 +26,6 @@ Collection.prototype.insert = (object, callback) ->
 		console.log 'inserted'
 		console.log '    ', err
 		console.log '    ', data
-		callback.apply this, arguments
+		callback and callback.apply this, arguments
 
 module.exports = Server

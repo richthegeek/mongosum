@@ -43,7 +43,7 @@
       console.log('inserted');
       console.log('    ', err);
       console.log('    ', data);
-      return callback.apply(this, arguments);
+      return callback && callback.apply(this, arguments);
     });
   };
 
