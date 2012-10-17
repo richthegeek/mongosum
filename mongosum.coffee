@@ -110,13 +110,10 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 		originals = {}
 		originals[o._id.toString()] = o for o in _originals
 
-		console.log 'found'
-		console.log originals
-		throw '...'
-
 		complete = 0
 		for obj in object
 			@findAndModify options, obj, (err, data) =>
+				console.log 'modified', data
 				if not err and data
 					subtract_schema err, originals[data._id.toString()]
 					update_schema err, data

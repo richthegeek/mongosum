@@ -170,14 +170,12 @@
         o = _originals[_i];
         originals[o._id.toString()] = o;
       }
-      console.log('found');
-      console.log(originals);
-      throw '...';
       complete = 0;
       _results = [];
       for (_j = 0, _len1 = object.length; _j < _len1; _j++) {
         obj = object[_j];
         _results.push(this.findAndModify(options, obj, function(err, data) {
+          console.log('modified', data);
           if (!err && data) {
             subtract_schema(err, originals[data._id.toString()]);
             update_schema(err, data);
