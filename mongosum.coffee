@@ -24,15 +24,15 @@ Collection.prototype.getSchema = (callback) ->
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
-	cb = (err, data, schema) ->
-		# update schema
-		callback and callback err, data
-
-	update_schema = (data) ->
-		console.log 'INSERTED', data
-		console.log 'SCHEMA:', schema
-
 	@getSchema (err, schema) =>
+		cb = (err, data, schema) ->
+			# update schema
+			callback and callback err, data
+
+		update_schema = (data) ->
+			console.log 'INSERTED', data
+			console.log 'SCHEMA:', schema
+
 		if Object::toString.call(object) is '[object Array]'
 			complete = 0
 			for obj in object

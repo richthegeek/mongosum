@@ -41,17 +41,16 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var cb, update_schema,
-      _this = this;
-    cb = function(err, data, schema) {
-      return callback && callback(err, data);
-    };
-    update_schema = function(data) {
-      console.log('INSERTED', data);
-      return console.log('SCHEMA:', schema);
-    };
+    var _this = this;
     return this.getSchema(function(err, schema) {
-      var complete, obj, _i, _len, _results;
+      var cb, complete, obj, update_schema, _i, _len, _results;
+      cb = function(err, data, schema) {
+        return callback && callback(err, data);
+      };
+      update_schema = function(data) {
+        console.log('INSERTED', data);
+        return console.log('SCHEMA:', schema);
+      };
       if (Object.prototype.toString.call(object) === '[object Array]') {
         complete = 0;
         _results = [];
