@@ -69,7 +69,7 @@
   Collection.prototype.updateSchema = function(callback) {
     var each, schema;
     schema = {};
-    each = function(err, object) {
+    each = function(object) {
       return merge_schema(schema, get_schema(object));
     };
     return this.find().forEach(each, function() {
