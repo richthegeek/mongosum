@@ -124,6 +124,14 @@
         return merge_schema(schema, get_schema(data), {
           sum: function(a, b) {
             return (b === null && -a) || (a - b);
+          },
+          min: function(a, b) {
+            console.log('min', a, b);
+            return a;
+          },
+          max: function(a, b) {
+            console.log('max', a, b);
+            return a;
           }
         });
       }
