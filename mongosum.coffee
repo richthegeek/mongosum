@@ -24,7 +24,7 @@ Collection.prototype.getSchema = (callback) ->
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
-	cb = (err, data, schema) ->
+	cb = (err, data, schema) =>
 		# update schema
 		@getSchema (err, full_schema) =>
 			full_schema = merge_schema full_schema, schema

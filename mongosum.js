@@ -41,10 +41,10 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var cb, complete, merge_schema, obj, schema, update_schema, _i, _len, _results;
+    var cb, complete, merge_schema, obj, schema, update_schema, _i, _len, _results,
+      _this = this;
     cb = function(err, data, schema) {
-      var _this = this;
-      return this.getSchema(function(err, full_schema) {
+      return _this.getSchema(function(err, full_schema) {
         full_schema = merge_schema(full_schema, schema);
         return _this.setSchema(full_schema, function() {
           return callback && callback(err, data);
