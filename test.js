@@ -12,7 +12,7 @@
 
   coll.insert({
     a: 'george',
-    b: 0
+    b: 60
   });
 
 }).call(this);

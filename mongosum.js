@@ -216,8 +216,8 @@
       }
       v1 = object[key];
       v2 = second[key];
-      type1 = (v1 && v1.constructor.name) || 'Null';
-      type2 = (v2 && v2.constructor.name) || 'Null';
+      type1 = ((v1 != null) && v1.constructor && v1.constructor.name) || 'Null';
+      type2 = ((v2 != null) && v2.constructor && v2.constructor.name) || 'Null';
       if ((type1 === 'Object' || type1 === 'Array') && !(v1.type != null)) {
         object[key] = walk_objects(v1, v2, fn);
       } else {

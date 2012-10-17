@@ -130,8 +130,8 @@ walk_objects = (object, second = {}, fn) ->
 	for key in keys when key not in ignore
 		v1 = object[key]
 		v2 = second[key]
-		type1 = (v1 and v1.constructor.name) or 'Null'
-		type2 = (v2 and v2.constructor.name) or 'Null'
+		type1 = (v1? and v1.constructor and v1.constructor.name) or 'Null'
+		type2 = (v2? and v2.constructor and v2.constructor.name) or 'Null'
 
 		if type1 in ['Object', 'Array'] and not v1.type?
 			object[key] = walk_objects v1, v2, fn
