@@ -87,8 +87,8 @@ Collection.prototype.rebuildSummary = (callback) ->
 Collection.prototype._merge_summarys = (err, data, callback, options, summary, summary_change_count) ->
 	if summary_change_count > 0
 		@getSummary (err, full_summary) =>
-			console.log full_summary, summary
 			full_summary = merge_summary full_summary, summary, options
+			console.log full_summary, summary
 			@setSummary full_summary, () ->
 				callback and callback err, data
 	else
@@ -104,7 +104,7 @@ Collection.prototype.insert = (object, callback) ->
 	if @name is collection_name
 		return Collection.prototype._insert.apply this, arguments
 
-	[summary, summary_change_count, options]  = [{}, 0, null]
+	[summary, summary_change_count, options]  = [{_length: 0}, 0, null]
 	update_summary = (err, data) =>
 		if not err
 			summary_change_count++
@@ -140,7 +140,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	# Do a find on the criteria specified
 	# Do a findAndModify
 	# If the update returns, subtract original and add updated
-	[summary, summary_change_count]  = [{}, 0]
+	[summary, summary_change_count]  = [{_length: 0}, 0]
 	subtract_summary = (err, data) =>
 		if not err and data
 			merge_summary summary, (get_summary data, @_summaryOptions), {
@@ -215,7 +215,7 @@ Collection.prototype.remove = (criteria, callback) ->
 		callback = criteria
 		criteria = {}
 
-	summary = {}
+	summary = {_length: 0}
 	summary_options = null
 	subtract_summary = (err, data) =>
 	if not err and data

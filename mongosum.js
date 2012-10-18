@@ -140,8 +140,8 @@
     var _this = this;
     if (summary_change_count > 0) {
       return this.getSummary(function(err, full_summary) {
-        console.log(full_summary, summary);
         full_summary = merge_summary(full_summary, summary, options);
+        console.log(full_summary, summary);
         return _this.setSummary(full_summary, function() {
           return callback && callback(err, data);
         });
@@ -168,7 +168,11 @@
     if (this.name === collection_name) {
       return Collection.prototype._insert.apply(this, arguments);
     }
-    _ref = [{}, 0, null], summary = _ref[0], summary_change_count = _ref[1], options = _ref[2];
+    _ref = [
+      {
+        _length: 0
+      }, 0, null
+    ], summary = _ref[0], summary_change_count = _ref[1], options = _ref[2];
     update_summary = function(err, data) {
       if (!err) {
         summary_change_count++;
@@ -215,7 +219,11 @@
     if (callback && typeof callback !== 'function') {
       throw 'Callback is not a function!';
     }
-    _ref = [{}, 0], summary = _ref[0], summary_change_count = _ref[1];
+    _ref = [
+      {
+        _length: 0
+      }, 0
+    ], summary = _ref[0], summary_change_count = _ref[1];
     subtract_summary = function(err, data) {
       if (!err && data) {
         return merge_summary(summary, get_summary(data, _this._summaryOptions), {
@@ -328,7 +336,9 @@
       callback = criteria;
       criteria = {};
     }
-    summary = {};
+    summary = {
+      _length: 0
+    };
     summary_options = null;
     subtract_summary = function(err, data) {};
     if (!err && data) {
