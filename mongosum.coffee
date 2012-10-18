@@ -88,7 +88,10 @@ Collection.prototype._merge_summarys = (err, data, callback, options, summary, s
 	if summary_change_count > 0
 		@getSummary (err, full_summary) =>
 			summary._length += full_summary._length
+			console.log full_summary._length, summary._length
 			full_summary = merge_summary full_summary, summary, options
+			console.log full_summary._length, summary._length
+
 			@setSummary full_summary, () ->
 				callback and callback err, data
 	else
