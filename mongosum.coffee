@@ -68,15 +68,15 @@ Collection.prototype.setSummary = (summary, callback) ->
 # Do a full-table update of the summary. This is expensive.
 ###
 Collection.prototype.rebuildSummary = (callback) ->
-	@getSummaryOptions () =>
+	@getSummaryOptions (options) =>
 		summary =
 			_collection: @name
-			_options: @_summaryOptions
+			_options: options
 			_length: 0
 
 		each = (object) ->
 			summary._length++
-			merge_summary summary, get_summary object, @_summaryOptions
+			merge_summary summary, get_summary object, options
 
 		@find().forEach each, () =>
 			@setSummary summary, callback

@@ -114,16 +114,16 @@
 
   Collection.prototype.rebuildSummary = function(callback) {
     var _this = this;
-    return this.getSummaryOptions(function() {
+    return this.getSummaryOptions(function(options) {
       var each, summary;
       summary = {
         _collection: _this.name,
-        _options: _this._summaryOptions,
+        _options: options,
         _length: 0
       };
       each = function(object) {
         summary._length++;
-        return merge_summary(summary, get_summary(object, this._summaryOptions));
+        return merge_summary(summary, get_summary(object, options));
       };
       return _this.find().forEach(each, function() {
         return _this.setSummary(summary, callback);
