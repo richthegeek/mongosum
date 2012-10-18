@@ -10,9 +10,6 @@
 
   coll = db.collection('test');
 
-  coll.insert({
-    a: 'george',
-    b: 10
-  });
+  coll.rebuildSummary();
 
 }).call(this);
