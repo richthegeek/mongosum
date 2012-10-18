@@ -49,6 +49,7 @@ Collection.prototype.getSummary = (callback) ->
 	@db.summary.find(criteria).next (err, summary = {}) =>
 		summary._collection ?= @name
 		summary._options ?= @defaultSummaryOptions()
+		summary._length ?= 0
 		@_summaryOptions = summary._options
 		callback err, summary
 
@@ -68,9 +69,15 @@ Collection.prototype.setSummary = (summary, callback) ->
 ###
 Collection.prototype.rebuildSummary = (callback) ->
 	@getSummaryOptions () =>
-		summary = {_options: @_summaryOptions}
+		summary =
+			_collection: @name
+			_options: @_summaryOptions
+			_length: 0
 
-		each = (object) -> merge_summary summary, get_summary object, @_summaryOptions
+		each = (object) ->
+			summary._length++
+			merge_summary summary, get_summary object, @_summaryOptions
+
 		@find().forEach each, () =>
 			@setSummary summary, callback
 
@@ -110,6 +117,7 @@ Collection.prototype.insert = (object, callback) ->
 		for obj in object
 			@_insert obj, (err, data) =>
 				update_summary err, data
+				summary._length++
 				if ++complete is object.length
 					@_merge_summarys err, data, callback, {}, summary, summary_change_count
 
@@ -229,10 +237,10 @@ Collection.prototype.remove = (criteria, callback) ->
 		@find(criteria).toArray (err, data) =>
 			data = data or []
 			for row in data
+				summary._length--
 				subtract_summary err, row
 			try
-				if data.length > 0
-					@_merge_summarys err, data, (() -> null), merge_opts, summary, 1
+				@_merge_summarys err, data, (() -> null), merge_opts, summary, data.length
 				@_remove criteria, callback
 			catch e
 				if e is 'FULL UPDATE'

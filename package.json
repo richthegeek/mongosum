@@ -1,0 +1,29 @@
+{
+	"name": "mongosum",
+	"description": "Maintains summary tables on Mongo collections, on top of Mongolian",
+	"version": "0.1.0",
+	"homepage": "https://github.com/richthegeek/mongosum",
+	"repository": "git@github.com:richthegeek/mongosum.git",
+	"author": "Livelink New Media <support@ltl.uk.com>",
+	"main": "./mongosum.js",
+	"keywords" : ["mongo", "mongodb", "database", "db", "mongolian"],
+	"contributors":
+	[
+		{
+			"name": "Richard Lyon",
+			"email": "richthegeek@gmail.com"
+		},
+		{
+			"name": "John Sanderson",
+			"email": "js@9point6.com"
+		}
+	],
+	"dependencies":
+	{
+		"mongolian": "0.x.x"
+	},
+	"engine":
+	{
+		"node": "0.8.x"
+	}
+}

@@ -72,7 +72,7 @@
       _collection: this.name
     };
     return this.db.summary.find(criteria).next(function(err, summary) {
-      var _ref, _ref1;
+      var _ref, _ref1, _ref2;
       if (summary == null) {
         summary = {};
       }
@@ -81,6 +81,9 @@
       }
       if ((_ref1 = summary._options) == null) {
         summary._options = _this.defaultSummaryOptions();
+      }
+      if ((_ref2 = summary._length) == null) {
+        summary._length = 0;
       }
       _this._summaryOptions = summary._options;
       return callback(err, summary);
@@ -114,9 +117,12 @@
     return this.getSummaryOptions(function() {
       var each, summary;
       summary = {
-        _options: _this._summaryOptions
+        _collection: _this.name,
+        _options: _this._summaryOptions,
+        _length: 0
       };
       each = function(object) {
+        summary._length++;
         return merge_summary(summary, get_summary(object, this._summaryOptions));
       };
       return _this.find().forEach(each, function() {
@@ -179,6 +185,7 @@
         obj = object[_i];
         _results.push(_this._insert(obj, function(err, data) {
           update_summary(err, data);
+          summary._length++;
           if (++complete === object.length) {
             return _this._merge_summarys(err, data, callback, {}, summary, summary_change_count);
           }
@@ -356,14 +363,13 @@
         data = data || [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           row = data[_i];
+          summary._length--;
           subtract_summary(err, row);
         }
         try {
-          if (data.length > 0) {
-            _this._merge_summarys(err, data, (function() {
-              return null;
-            }), merge_opts, summary, 1);
-          }
+          _this._merge_summarys(err, data, (function() {
+            return null;
+          }), merge_opts, summary, data.length);
           return _this._remove(criteria, callback);
         } catch (e) {
           if (e === 'FULL UPDATE') {
