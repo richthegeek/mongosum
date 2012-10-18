@@ -140,8 +140,8 @@
     var _this = this;
     if (summary_change_count > 0) {
       return this.getSummary(function(err, full_summary) {
-        full_summary = merge_summary(full_summary, summary, options);
         console.log(full_summary, summary);
+        full_summary = merge_summary(full_summary, summary, options);
         return _this.setSummary(full_summary, function() {
           return callback && callback(err, data);
         });
