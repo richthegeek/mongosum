@@ -87,9 +87,8 @@ Collection.prototype.rebuildSummary = (callback) ->
 Collection.prototype._merge_summarys = (err, data, callback, options, summary, summary_change_count) ->
 	if summary_change_count > 0
 		@getSummary (err, full_summary) =>
-			length = full_summary._length + summary._length
+			console.log full_summary, summary
 			full_summary = merge_summary full_summary, summary, options
-			full_summary._length = length
 			@setSummary full_summary, () ->
 				callback and callback err, data
 	else
