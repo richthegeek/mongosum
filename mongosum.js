@@ -104,6 +104,7 @@
       _collection: this.name
     };
     summary._collection = this.name;
+    summary._updated = +(new Date);
     return this.db.summary.update(criteria, summary, true, callback);
   };
 
@@ -141,7 +142,6 @@
     return this.getSummary(function(err, full_summary) {
       full_summary._length += summary._length;
       full_summary = merge_summary(full_summary, summary, options);
-      full_summary._updated = +(new Date);
       return _this.setSummary(full_summary, function() {
         return callback && callback(err, data);
       });

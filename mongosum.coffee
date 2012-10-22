@@ -62,6 +62,7 @@ Collection.prototype.setSummary = (summary, callback) ->
 
 	criteria = _collection: @name
 	summary._collection = @name
+	summary._updated = +new Date
 	@db.summary.update criteria, summary, true, callback
 
 ###
@@ -88,7 +89,6 @@ Collection.prototype._merge_summarys = (err, data, callback, options, summary) -
 	@getSummary (err, full_summary) =>
 		full_summary._length += summary._length
 		full_summary = merge_summary full_summary, summary, options
-		full_summary._updated = +new Date
 
 		@setSummary full_summary, () ->
 			callback and callback err, data
