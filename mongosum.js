@@ -136,19 +136,16 @@
   */
 
 
-  Collection.prototype._merge_summarys = function(err, data, callback, options, summary, summary_change_count) {
+  Collection.prototype._merge_summarys = function(err, data, callback, options, summary) {
     var _this = this;
-    if (summary_change_count > 0) {
-      return this.getSummary(function(err, full_summary) {
-        full_summary._length += summary._length;
-        full_summary = merge_summary(full_summary, summary, options);
-        return _this.setSummary(full_summary, function() {
-          return callback && callback(err, data);
-        });
+    return this.getSummary(function(err, full_summary) {
+      full_summary._length += summary._length;
+      full_summary = merge_summary(full_summary, summary, options);
+      full_summary._updated = +(new Date);
+      return _this.setSummary(full_summary, function() {
+        return callback && callback(err, data);
       });
-    } else {
-      return callback && callback(err, data);
-    }
+    });
   };
 
   Collection.prototype._drop = Collection.prototype.drop;
@@ -163,19 +160,16 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var options, summary, summary_change_count, update_summary, _ref,
+    var summary, update_summary,
       _this = this;
     if (this.name === collection_name) {
       return Collection.prototype._insert.apply(this, arguments);
     }
-    _ref = [
-      {
-        _length: 0
-      }, 0, null
-    ], summary = _ref[0], summary_change_count = _ref[1], options = _ref[2];
+    summary = {
+      _length: 0
+    };
     update_summary = function(err, data) {
       if (!err) {
-        summary_change_count++;
         return merge_summary(summary, get_summary(data, _this._summaryOptions));
       }
     };
@@ -192,7 +186,7 @@
           update_summary(err, data);
           summary._length++;
           if (++complete === object.length) {
-            return _this._merge_summarys(err, data, callback, {}, summary, summary_change_count);
+            return _this._merge_summarys(err, data, callback, {}, summary);
           }
         }));
       }
@@ -203,7 +197,7 @@
   Collection.prototype._update = Collection.prototype.update;
 
   Collection.prototype.update = function(criteria, object, upsert, multi, callback) {
-    var merge_opts, options, subtract_summary, summary, summary_change_count, update_summary, _ref,
+    var merge_opts, options, subtract_summary, summary, update_summary,
       _this = this;
     if (this.name === collection_name) {
       return Collection.prototype._update.apply(this, arguments);
@@ -219,11 +213,9 @@
     if (callback && typeof callback !== 'function') {
       throw 'Callback is not a function!';
     }
-    _ref = [
-      {
-        _length: 0
-      }, 0
-    ], summary = _ref[0], summary_change_count = _ref[1];
+    summary = {
+      _length: 0
+    };
     subtract_summary = function(err, data) {
       if (!err && data) {
         return merge_summary(summary, get_summary(data, _this._summaryOptions), {
@@ -241,7 +233,6 @@
     };
     update_summary = function(err, data) {
       if (!err && data) {
-        summary_change_count++;
         return merge_summary(summary, get_summary(data, _this._summaryOptions));
       }
     };
@@ -307,7 +298,7 @@
                     data = for_merge[_k];
                     update_summary(null, data);
                   }
-                  return _this._merge_summarys(err, data, callback, merge_opts, summary, summary_change_count);
+                  return _this._merge_summarys(err, data, callback, merge_opts, summary);
                 } catch (e) {
                   if (e === 'FULL UPDATE') {
                     return _this.updateSummary(callback);
@@ -380,7 +371,7 @@
         try {
           _this._merge_summarys(err, data, (function() {
             return null;
-          }), merge_opts, summary, data.length);
+          }), merge_opts, summary);
           return _this._remove(criteria, callback);
         } catch (e) {
           if (e === 'FULL UPDATE') {

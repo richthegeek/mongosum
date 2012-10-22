@@ -84,15 +84,14 @@ Collection.prototype.rebuildSummary = (callback) ->
 ###
 # INTERNAL. Merge summary, save it, and fire the callback.
 ###
-Collection.prototype._merge_summarys = (err, data, callback, options, summary, summary_change_count) ->
-	if summary_change_count > 0
-		@getSummary (err, full_summary) =>
-			full_summary._length += summary._length
-			full_summary = merge_summary full_summary, summary, options
-			@setSummary full_summary, () ->
-				callback and callback err, data
-	else
-		callback and callback err, data
+Collection.prototype._merge_summarys = (err, data, callback, options, summary) ->
+	@getSummary (err, full_summary) =>
+		full_summary._length += summary._length
+		full_summary = merge_summary full_summary, summary, options
+		full_summary._updated = +new Date
+
+		@setSummary full_summary, () ->
+			callback and callback err, data
 
 Collection.prototype._drop = Collection.prototype.drop
 Collection.prototype.drop = () ->
@@ -104,10 +103,9 @@ Collection.prototype.insert = (object, callback) ->
 	if @name is collection_name
 		return Collection.prototype._insert.apply this, arguments
 
-	[summary, summary_change_count, options]  = [{_length: 0}, 0, null]
+	summary = _length: 0
 	update_summary = (err, data) =>
 		if not err
-			summary_change_count++
 			merge_summary summary, get_summary data, @_summaryOptions
 
 	if Object::toString.call(object) isnt '[object Array]'
@@ -120,7 +118,7 @@ Collection.prototype.insert = (object, callback) ->
 				update_summary err, data
 				summary._length++
 				if ++complete is object.length
-					@_merge_summarys err, data, callback, {}, summary, summary_change_count
+					@_merge_summarys err, data, callback, {}, summary
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
@@ -140,7 +138,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	# Do a find on the criteria specified
 	# Do a findAndModify
 	# If the update returns, subtract original and add updated
-	[summary, summary_change_count]  = [{_length: 0}, 0]
+	summary = _length: 0
 	subtract_summary = (err, data) =>
 		if not err and data
 			merge_summary summary, (get_summary data, @_summaryOptions), {
@@ -151,7 +149,6 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 
 	update_summary = (err, data) =>
 		if not err and data
-			summary_change_count++
 			merge_summary summary, get_summary data, @_summaryOptions
 
 	if Object::toString.call(object) isnt '[object Array]'
@@ -199,7 +196,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 						if ++complete is object.length
 							try
 								update_summary null, data for data in for_merge
-								@_merge_summarys err, data, callback, merge_opts, summary, summary_change_count
+								@_merge_summarys err, data, callback, merge_opts, summary
 							catch e
 								if e is 'FULL UPDATE'
 									@updateSummary callback
@@ -241,7 +238,7 @@ Collection.prototype.remove = (criteria, callback) ->
 				summary._length--
 				subtract_summary err, row
 			try
-				@_merge_summarys err, data, (() -> null), merge_opts, summary, data.length
+				@_merge_summarys err, data, (() -> null), merge_opts, summary
 				@_remove criteria, callback
 			catch e
 				if e is 'FULL UPDATE'
