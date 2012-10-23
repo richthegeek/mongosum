@@ -41,8 +41,8 @@ Collection.prototype.getSummaryOptions = (callback) ->
 
 Collection.prototype.setSummaryOptions = (options, callback) ->
 	@getSummary (err, summary) =>
-		delete options.track_column
-		delete options.track_collection
+		delete summary._options.track_column
+		delete summary._options.track_collection
 		summary._options = options
 		@setSummary summary, callback
 
@@ -71,6 +71,8 @@ Collection.prototype.setSummary = (summary, callback) ->
 	criteria = _collection: @name
 	summary._collection = @name
 	summary._updated = +new Date
+	delete summary._options.track_column
+	delete summary._options.track_collection
 	@db.summary.update criteria, summary, true, callback
 
 ###
