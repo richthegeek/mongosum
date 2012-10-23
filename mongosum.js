@@ -12,9 +12,26 @@
   collection_name = '_summaries';
 
   Server.prototype.defaultSummaryOptions = function(opts) {
-    this._defaultSummaryOptions = opts || this._defaultSummaryOptions || {
-      ignored_columns: ['_id']
-    };
+    var _base, _base1, _base2, _base3, _ref, _ref1, _ref2, _ref3;
+    this._defaultSummaryOptions = opts || this._defaultSummaryOptions;
+    if ((_ref = (_base = this._defaultSummaryOptions).ignored_columns) == null) {
+      _base.ignored_columns = ['_id'];
+    }
+    if ((_ref1 = (_base1 = this._defaultSummaryOptions).track_column) == null) {
+      _base1.track_column = function(column, options) {
+        var _ref2;
+        return _ref2 = !column, __indexOf.call(options.ignored_columns, _ref2) >= 0;
+      };
+    }
+    if ((_ref2 = (_base2 = this._defaultSummaryOptions).ignored_collections) == null) {
+      _base2.ignored_collections = [];
+    }
+    if ((_ref3 = (_base3 = this._defaultSummaryOptions).track_collection) == null) {
+      _base3.track_collection = function(collection, options) {
+        var _ref4;
+        return _ref4 = !collection, __indexOf.call(options.ignored_collections, _ref4) >= 0;
+      };
+    }
     return this._defaultSummaryOptions;
   };
 
@@ -42,6 +59,7 @@
     var _this = this;
     if (!this._summaryOptions) {
       return this.getSummary(function(err, summary) {
+        summary._options = _this.defaultSummaryOptions(summary._options || {});
         return callback(_this._summaryOptions = summary._options);
       });
     } else {
@@ -177,7 +195,8 @@
       object = [object];
     }
     return this.getSummaryOptions(function() {
-      var complete, obj, _i, _len, _results;
+      var complete, obj, track, _i, _len, _results;
+      track = _this._summaryOptions.track_collection(_this.name, _this._summaryOptions);
       complete = 0;
       _results = [];
       for (_i = 0, _len = object.length; _i < _len; _i++) {
@@ -433,7 +452,7 @@
   };
 
   walk_objects = function(first, second, options, fn) {
-    var ignore, k, key, keys, type, v, v1, v2, _i, _j, _len, _len1, _ref, _ref1;
+    var k, key, keys, type, v, v1, v2, val, _i, _len, _ref;
     if (second == null) {
       second = {};
     }
@@ -452,10 +471,9 @@
         keys.push(k);
       }
     }
-    ignore = options.ignored_columns || [];
     for (_i = 0, _len = keys.length; _i < _len; _i++) {
       key = keys[_i];
-      if (!(__indexOf.call(ignore, key) < 0)) {
+      if (!(options.track_column(key, options))) {
         continue;
       }
       v1 = first[key];
@@ -469,10 +487,9 @@
         first[key] = fn(key, [v1, v2], [type(v1), type(v2)]);
       }
     }
-    _ref1 = options.ignored_columns || [];
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      key = _ref1[_j];
-      if (first && first[key]) {
+    for (key in first) {
+      val = first[key];
+      if (!options.track_column(key, options)) {
         delete first[key];
       }
     }

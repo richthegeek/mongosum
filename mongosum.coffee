@@ -5,9 +5,14 @@ Collection = require 'mongolian/lib/collection.js'
 collection_name = '_summaries'
 
 Server.prototype.defaultSummaryOptions = (opts) ->
-	@_defaultSummaryOptions = opts or @_defaultSummaryOptions or {
-		ignored_columns: ['_id']
-	}
+	@_defaultSummaryOptions = opts or @_defaultSummaryOptions
+
+	@_defaultSummaryOptions.ignored_columns ?= ['_id']
+	@_defaultSummaryOptions.track_column ?= (column, options) -> return not column in options.ignored_columns
+
+	@_defaultSummaryOptions.ignored_collections ?= []
+	@_defaultSummaryOptions.track_collection ?= (collection, options) -> return not collection in options.ignored_collections
+
 	return @_defaultSummaryOptions
 
 DB.prototype.defaultSummaryOptions = () ->
@@ -29,6 +34,7 @@ DB.prototype.collection = (name) ->
 Collection.prototype.getSummaryOptions = (callback) ->
 	if not @_summaryOptions
 		@getSummary (err, summary) =>
+			summary._options = @defaultSummaryOptions summary._options or {}
 			callback @_summaryOptions = summary._options
 	else
 		callback @_summaryOptions
@@ -112,6 +118,7 @@ Collection.prototype.insert = (object, callback) ->
 		object = [object]
 
 	@getSummaryOptions () =>
+		track = @_summaryOptions.track_collection @name, @_summaryOptions
 		complete = 0
 		for obj in object
 			@_insert obj, (err, data) =>
@@ -278,8 +285,7 @@ walk_objects = (first, second = {}, options, fn) ->
 	keys = (k for k,v of first)
 	(keys.push k for k,v of second when k not in keys)
 
-	ignore = options.ignored_columns or []
-	for key in keys when key not in ignore
+	for key in keys when options.track_column key, options
 		v1 = first[key]
 		v2 = second[key]
 		type = (o) -> (o? and o.constructor and o.constructor.name) or 'Null'
@@ -288,8 +294,10 @@ walk_objects = (first, second = {}, options, fn) ->
 			first[key] = walk_objects v1, v2, options, fn
 		else
 			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
-	for key in (options.ignored_columns or []) when first and first[key]
+
+	for key, val of first when not options.track_column key, options
 		delete first[key]
+
 	return first
 
 
