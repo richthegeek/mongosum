@@ -9,7 +9,7 @@ Server.prototype.defaultSummaryOptions = (opts) ->
 
 	@_defaultSummaryOptions.ignored_columns ?= ['_id']
 	@_defaultSummaryOptions.track_column ?= (column, options) ->
-		console.log 'track column', column, not column in options.ignored_columns
+		console.log 'track column', column, options, not column in options.ignored_columns
 		return not column in options.ignored_columns
 
 	@_defaultSummaryOptions.ignored_collections ?= []

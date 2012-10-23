@@ -20,7 +20,7 @@
     if ((_ref1 = (_base1 = this._defaultSummaryOptions).track_column) == null) {
       _base1.track_column = function(column, options) {
         var _ref2, _ref3;
-        console.log('track column', column, (_ref2 = !column, __indexOf.call(options.ignored_columns, _ref2) >= 0));
+        console.log('track column', column, options, (_ref2 = !column, __indexOf.call(options.ignored_columns, _ref2) >= 0));
         return _ref3 = !column, __indexOf.call(options.ignored_columns, _ref3) >= 0;
       };
     }
