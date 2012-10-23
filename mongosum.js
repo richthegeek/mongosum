@@ -19,7 +19,6 @@
     }
     if ((_ref1 = (_base1 = this._defaultSummaryOptions).track_column) == null) {
       _base1.track_column = function(column, options) {
-        console.log('track column', column, options, __indexOf.call(options.ignored_columns, column) < 0);
         return __indexOf.call(options.ignored_columns, column) < 0;
       };
     }
@@ -29,7 +28,6 @@
     if ((_ref3 = (_base3 = this._defaultSummaryOptions).track_collection) == null) {
       _base3.track_collection = function(collection, options) {
         var _ref4;
-        console.log('track collection', collection, __indexOf.call(options.ignored_collections, collection) < 0);
         return _ref4 = !collection, __indexOf.call(options.ignored_collections, _ref4) >= 0;
       };
     }
