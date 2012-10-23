@@ -22,7 +22,7 @@ coll.getSummary(callback)
 // Force a full refresh of the summary (this is a heavy operation, do it rarely)
 coll.rebuildSummary(callback)
 
-// Set the options on the summariser. Currently only suppors an "ignored_columns" array, for things like _id
+// Set the options on the summariser. Allows a specific "ignored_columns" on the collection
 coll.setSummaryOptions(options, callback)
 
 // Alter the default summary options - if the collection does not have explicit options, it will use these.
@@ -31,3 +31,28 @@ dbms.defaultSummaryOptions(options)
 db.defaultSummaryOptions(options) // writes to global default
 coll.defaultSummaryOptions(options) // writes to global default
 ```
+
+## Tracked information
+At the collection level, the summary tracks:
+
+ - _length: the total number of records that contributed to the summary.
+ - _updated: the timestamp of the last insert/update/delete call.
+
+On a column level, depending on type:
+
+ - type: the constructor name of the last value. For example, "String" or "Number".
+ - example: the last value set on this property. Not guaranteed to still exist in the database.
+ - For numeric values:
+ 	- sum: the sum of values in this property.
+ 	- min: the minimum value in this property.
+ 	- max: the maximum value in this property.
+
+## Options
+Options can be set per-instance with coll.defaultSummaryOptions(options) or persisted with coll.setSummaryOptions(options).
+
+The options should be an object with the following optional properties:
+
+ - ignored_columns: an array of column names which mongosum should not summarise, such as _id.
+ - ignored_collections: an array of collection names for which mongosum should not create summaries.
+ - track_column(name, options): a (non-persisted) callback function that should return true if this column is to be tracked. The default implementation checks for the column in the ignored_columns option.
+ - track_collection(name, options): a (non-persisted) callback function that should return true if this collection is to be tracked. The default implementation checks for the column in the ignored_collections option.
