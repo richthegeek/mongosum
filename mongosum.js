@@ -13,7 +13,7 @@
 
   Server.prototype.defaultSummaryOptions = function(opts) {
     var _base, _base1, _base2, _base3, _ref, _ref1, _ref2, _ref3;
-    this._defaultSummaryOptions = opts || this._defaultSummaryOptions;
+    this._defaultSummaryOptions = opts || this._defaultSummaryOptions || {};
     if ((_ref = (_base = this._defaultSummaryOptions).ignored_columns) == null) {
       _base.ignored_columns = ['_id'];
     }

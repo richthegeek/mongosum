@@ -5,7 +5,7 @@ Collection = require 'mongolian/lib/collection.js'
 collection_name = '_summaries'
 
 Server.prototype.defaultSummaryOptions = (opts) ->
-	@_defaultSummaryOptions = opts or @_defaultSummaryOptions
+	@_defaultSummaryOptions = opts or @_defaultSummaryOptions or {}
 
 	@_defaultSummaryOptions.ignored_columns ?= ['_id']
 	@_defaultSummaryOptions.track_column ?= (column, options) -> return not column in options.ignored_columns
