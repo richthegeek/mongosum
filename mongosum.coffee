@@ -41,6 +41,8 @@ Collection.prototype.getSummaryOptions = (callback) ->
 
 Collection.prototype.setSummaryOptions = (options, callback) ->
 	@getSummary (err, summary) =>
+		delete options.track_column
+		delete options.track_collection
 		summary._options = options
 		@setSummary summary, callback
 

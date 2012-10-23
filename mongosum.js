@@ -69,6 +69,8 @@
   Collection.prototype.setSummaryOptions = function(options, callback) {
     var _this = this;
     return this.getSummary(function(err, summary) {
+      delete options.track_column;
+      delete options.track_collection;
       summary._options = options;
       return _this.setSummary(summary, callback);
     });
