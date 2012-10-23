@@ -19,8 +19,9 @@
     }
     if ((_ref1 = (_base1 = this._defaultSummaryOptions).track_column) == null) {
       _base1.track_column = function(column, options) {
-        var _ref2;
-        return _ref2 = !column, __indexOf.call(options.ignored_columns, _ref2) >= 0;
+        var _ref2, _ref3;
+        console.log('track column', column, (_ref2 = !column, __indexOf.call(options.ignored_columns, _ref2) >= 0));
+        return _ref3 = !column, __indexOf.call(options.ignored_columns, _ref3) >= 0;
       };
     }
     if ((_ref2 = (_base2 = this._defaultSummaryOptions).ignored_collections) == null) {
@@ -28,8 +29,9 @@
     }
     if ((_ref3 = (_base3 = this._defaultSummaryOptions).track_collection) == null) {
       _base3.track_collection = function(collection, options) {
-        var _ref4;
-        return _ref4 = !collection, __indexOf.call(options.ignored_collections, _ref4) >= 0;
+        var _ref4, _ref5;
+        console.log('track collection', collection, (_ref4 = !collection, __indexOf.call(options.ignored_collections, _ref4) >= 0));
+        return _ref5 = !collection, __indexOf.call(options.ignored_collections, _ref5) >= 0;
       };
     }
     return this._defaultSummaryOptions;
