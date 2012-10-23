@@ -81,9 +81,9 @@ Collection.prototype.rebuildSummary = (callback) ->
 			_options: options
 			_length: 0
 
-		each = (object) ->
+		each = (object) =>
 			summary._length++
-			merge_summary summary, get_summary object, options
+			@_merge_summary summary, @_get_summary object
 
 		@find().forEach each, () =>
 			@setSummary summary, callback
@@ -94,7 +94,7 @@ Collection.prototype.rebuildSummary = (callback) ->
 Collection.prototype._merge_summarys = (err, data, callback, options, summary) ->
 	@getSummary (err, full_summary) =>
 		full_summary._length += summary._length
-		full_summary = merge_summary full_summary, summary, options
+		full_summary = @_merge_summary full_summary, summary, options
 
 		@setSummary full_summary, () ->
 			callback and callback err, data
@@ -112,7 +112,7 @@ Collection.prototype.insert = (object, callback) ->
 	summary = _length: 0
 	update_summary = (err, data) =>
 		if not err
-			merge_summary summary, get_summary data, @_summaryOptions
+			@_merge_summary summary, @_get_summary data
 
 	if Object::toString.call(object) isnt '[object Array]'
 		object = [object]
@@ -148,7 +148,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 	summary = _length: 0
 	subtract_summary = (err, data) =>
 		if not err and data
-			merge_summary summary, (get_summary data, @_summaryOptions), {
+			@_merge_summary summary, (@_get_summary data), {
 				sum: (a, b) -> return (b is null and -a) or (a - b)
 				min: (a, b) -> a
 				max: (a, b) -> a
@@ -156,7 +156,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 
 	update_summary = (err, data) =>
 		if not err and data
-			merge_summary summary, get_summary data, @_summaryOptions
+			@_merge_summary summary, @_get_summary data
 
 	if Object::toString.call(object) isnt '[object Array]'
 		object = [object]
@@ -222,12 +222,12 @@ Collection.prototype.remove = (criteria, callback) ->
 	summary = {_length: 0}
 	summary_options = null
 	subtract_summary = (err, data) =>
-	if not err and data
-		merge_summary summary, (get_summary data, @_summaryOptions), {
-			sum: (a, b) -> return (b is null and -a) or (a - b)
-			min: (a, b) -> a
-			max: (a, b) -> a
-		}
+		if not err and data
+			@_merge_summary summary, (@_get_summary data), {
+				sum: (a, b) -> return (b is null and -a) or (a - b)
+				min: (a, b) -> a
+				max: (a, b) -> a
+			}
 	merge_opts =
 		min: (a, b) ->
 			if isNaN(parseInt(a)) or (b == a)
@@ -254,8 +254,8 @@ Collection.prototype.remove = (criteria, callback) ->
 					throw e
 
 
-get_summary = (object, options) ->
-	walk_objects object, {}, options, (key, vals, types) ->
+Collection.prototype._get_summary = (object) ->
+	@_walk_objects object, {}, {}, (key, vals, types) ->
 		ret = {}
 		ret.type = types[0]
 		ret.example = vals[0]
@@ -263,12 +263,12 @@ get_summary = (object, options) ->
 			ret.min = ret.max = ret.sum = vals[0]
 		return ret
 
-merge_summary = (left, right, options = {}) ->
+Collection.prototype._merge_summary = (left, right, options = {}) ->
 	options.sum ?= (a, b) -> return (parseInt(a, 10) + parseInt(b, 10)) or a
 	options.min ?= Math.min
 	options.max ?= Math.max
 
-	walk_objects left, right, {}, (key, vals, types) ->
+	@_walk_objects left, right, {}, (key, vals, types) ->
 		if not vals[0] and vals[1]
 			vals[0] = JSON.parse JSON.stringify vals[1]
 			if vals[1].sum then vals[1].sum = null
@@ -281,7 +281,7 @@ merge_summary = (left, right, options = {}) ->
 			vals[0].example = (vals[1] and vals[1].example) or vals[0].example
 		return vals[0]
 
-walk_objects = (first, second = {}, options, fn) ->
+Collection.prototype._walk_objects = (first, second = {}, options, fn) ->
 	keys = (k for k,v of first)
 	(keys.push k for k,v of second when k not in keys)
 
@@ -291,7 +291,7 @@ walk_objects = (first, second = {}, options, fn) ->
 		type = (o) -> (o? and o.constructor and o.constructor.name) or 'Null'
 
 		if type(v1) in ['Object', 'Array'] and not v1.type?
-			first[key] = walk_objects v1, v2, options, fn
+			first[key] = @_walk_objects v1, v2, options, fn
 		else
 			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
 
