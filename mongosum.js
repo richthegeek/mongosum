@@ -473,7 +473,7 @@
     }
     for (_i = 0, _len = keys.length; _i < _len; _i++) {
       key = keys[_i];
-      if (!(options.track_column(key, options))) {
+      if (!(this._summaryOptions.track_column(key, this._summaryOptions))) {
         continue;
       }
       v1 = first[key];
@@ -489,7 +489,7 @@
     }
     for (key in first) {
       val = first[key];
-      if (!options.track_column(key, options)) {
+      if (!this._summaryOptions.track_column(key, this._summaryOptions)) {
         delete first[key];
       }
     }

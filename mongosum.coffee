@@ -285,7 +285,7 @@ walk_objects = (first, second = {}, options, fn) ->
 	keys = (k for k,v of first)
 	(keys.push k for k,v of second when k not in keys)
 
-	for key in keys when options.track_column key, options
+	for key in keys when @_summaryOptions.track_column key, @_summaryOptions
 		v1 = first[key]
 		v2 = second[key]
 		type = (o) -> (o? and o.constructor and o.constructor.name) or 'Null'
@@ -295,7 +295,7 @@ walk_objects = (first, second = {}, options, fn) ->
 		else
 			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
 
-	for key, val of first when not options.track_column key, options
+	for key, val of first when not @_summaryOptions.track_column key, @_summaryOptions
 		delete first[key]
 
 	return first
