@@ -12,10 +12,8 @@ Server.prototype._defaultSummaryOptions =
 
 
 Server.prototype.defaultSummaryOptions = (opts, write = true) ->
-	defs = (@_defaultSummaryOptions or Server::_defaultSummaryOptions)
-
 	opts = opts or {}
-	opts[k] ?= v for k,v of defs
+	opts[k] ?= v for k,v of @_defaultSummaryOptions
 
 	console.log opts, defs
 	throw 'nope'

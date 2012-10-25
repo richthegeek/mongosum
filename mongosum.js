@@ -24,15 +24,15 @@
   };
 
   Server.prototype.defaultSummaryOptions = function(opts, write) {
-    var defs, k, v, _ref;
+    var k, v, _ref, _ref1;
     if (write == null) {
       write = true;
     }
-    defs = this._defaultSummaryOptions || Server.prototype._defaultSummaryOptions;
     opts = opts || {};
-    for (k in defs) {
-      v = defs[k];
-      if ((_ref = opts[k]) == null) {
+    _ref = this._defaultSummaryOptions;
+    for (k in _ref) {
+      v = _ref[k];
+      if ((_ref1 = opts[k]) == null) {
         opts[k] = v;
       }
     }

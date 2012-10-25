@@ -2,6 +2,8 @@ mongo = require './mongosum.js'
 
 dbms = new mongo
 
+dbms._defaultSummaryOptions.ignored_collections = ['foo']
+
 db = dbms.db 'mongosum_test'
 coll = db.collection 'test'
 
