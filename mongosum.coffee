@@ -37,7 +37,6 @@ Collection.prototype.getSummary = (callback) ->
 	criteria = _collection: @name
 	@db.summary.find(criteria).next (err, summary = {}) =>
 		summary._collection ?= @name
-		summary._options = @getSummaryOptions()
 		summary._length ?= 0
 		callback err, summary
 
@@ -51,8 +50,6 @@ Collection.prototype.setSummary = (summary, callback) ->
 	criteria = _collection: @name
 	summary._collection = @name
 	summary._updated = +new Date
-	if summary._options
-		delete summary._options
 	@db.summary.update criteria, summary, true, callback
 
 ###
@@ -62,7 +59,6 @@ Collection.prototype.rebuildSummary = (callback) ->
 	options = @getSummaryOptions()
 	summary =
 		_collection: @name
-		_options: options
 		_length: 0
 
 	each = (object) =>
@@ -203,7 +199,6 @@ Collection.prototype.remove = (criteria, callback) ->
 		criteria = {}
 
 	summary = {_length: 0}
-	summary_options = null
 	subtract_summary = (err, data) =>
 		if not err and data
 			@_merge_summary summary, (@_get_summary data), {

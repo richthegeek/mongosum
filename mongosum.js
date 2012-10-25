@@ -69,7 +69,6 @@
       if ((_ref = summary._collection) == null) {
         summary._collection = _this.name;
       }
-      summary._options = _this.getSummaryOptions();
       if ((_ref1 = summary._length) == null) {
         summary._length = 0;
       }
@@ -92,9 +91,6 @@
     };
     summary._collection = this.name;
     summary._updated = +(new Date);
-    if (summary._options) {
-      delete summary._options;
-    }
     return this.db.summary.update(criteria, summary, true, callback);
   };
 
@@ -109,7 +105,6 @@
     options = this.getSummaryOptions();
     summary = {
       _collection: this.name,
-      _options: options,
       _length: 0
     };
     each = function(object) {
@@ -305,7 +300,7 @@
   Collection.prototype._remove = Collection.prototype.remove;
 
   Collection.prototype.remove = function(criteria, callback) {
-    var merge_opts, options, subtract_summary, summary, summary_options,
+    var merge_opts, options, subtract_summary, summary,
       _this = this;
     if (this.name === collection_name) {
       return Collection.prototype._update.apply(this, arguments);
@@ -317,7 +312,6 @@
     summary = {
       _length: 0
     };
-    summary_options = null;
     subtract_summary = function(err, data) {
       if (!err && data) {
         return _this._merge_summary(summary, _this._get_summary(data), {
