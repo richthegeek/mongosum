@@ -6,7 +6,7 @@
 
   dbms = new mongo;
 
-  dbms._defaultSummaryOptions.ignored_collections = ['foo'];
+  dbms.summaryOptions.ignored_collections = ['foo'];
 
   db = dbms.db('mongosum_test');
 

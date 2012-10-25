@@ -4,26 +4,18 @@ Collection = require 'mongolian/lib/collection.js'
 
 collection_name = '_summaries'
 
-Server.prototype._defaultSummaryOptions =
+Server.prototype.summaryOptions =
 	ignored_columns: ['_id'],
 	track_column: (column, options) -> return column not in options.ignored_columns
 	ignored_collections: [],
 	track_collection: (collection, options) -> return not collection in options.ignored_collections
 
-
-Server.prototype.defaultSummaryOptions = (opts, write = false) ->
-	opts = opts or {}
-	opts[k] ?= v for k,v of @_defaultSummaryOptions
-
-	if write
-		@_defaultSummaryOptions = opts
-
-	return opts
-
-DB.prototype.defaultSummaryOptions = (a,b) ->
-	@server.defaultSummaryOptions(a,b)
-Collection.prototype.defaultSummaryOptions = (a,b) ->
-	@db.server.defaultSummaryOptions(a,b)
+Server.prototype.getSummaryOptions = () ->
+	@summaryOptions
+DB.prototype.getSummaryOptions = () ->
+	@server.summaryOptions
+Collection.prototype.getSummaryOptions = () ->
+	@db.server.summaryOptions
 
 
 Server.prototype.db = (name) ->
@@ -35,22 +27,6 @@ Server.prototype.db = (name) ->
 DB.prototype.collection = (name) ->
 	return @_collections[name] or (@_collections[name] = new Collection @, name)
 
-
-Collection.prototype.getSummaryOptions = (callback) ->
-	if not @_summaryOptions
-		@getSummary (err, summary) =>
-			@_summaryOptions = summary._options = @defaultSummaryOptions summary._options
-			callback err, @_summaryOptions
-	else
-		callback null, @_summaryOptions
-
-Collection.prototype.setSummaryOptions = (options, callback) ->
-	@getSummary (err, summary) =>
-		delete summary._options.track_column
-		delete summary._options.track_collection
-		summary._options = @defaultSummaryOptions options
-		@setSummary summary, callback
-
 ###
 # Retrieve the summary for this collection
 ###
@@ -61,9 +37,8 @@ Collection.prototype.getSummary = (callback) ->
 	criteria = _collection: @name
 	@db.summary.find(criteria).next (err, summary = {}) =>
 		summary._collection ?= @name
-		summary._options ?= {}
+		summary._options = @getSummaryOptions()
 		summary._length ?= 0
-		@_summaryOptions = @defaultSummaryOptions summary._options
 		callback err, summary
 
 ###
@@ -77,26 +52,25 @@ Collection.prototype.setSummary = (summary, callback) ->
 	summary._collection = @name
 	summary._updated = +new Date
 	if summary._options
-		delete summary._options.track_column
-		delete summary._options.track_collection
+		delete summary._options
 	@db.summary.update criteria, summary, true, callback
 
 ###
 # Do a full-table update of the summary. This is expensive.
 ###
 Collection.prototype.rebuildSummary = (callback) ->
-	@getSummaryOptions (err, options) =>
-		summary =
-			_collection: @name
-			_options: options
-			_length: 0
+	options = @getSummaryOptions()
+	summary =
+		_collection: @name
+		_options: options
+		_length: 0
 
-		each = (object) =>
-			summary._length++
-			@_merge_summary summary, @_get_summary object
+	each = (object) =>
+		summary._length++
+		@_merge_summary summary, @_get_summary object
 
-		@find().forEach each, () =>
-			@setSummary summary, callback
+	@find().forEach each, () =>
+		@setSummary summary, callback
 
 ###
 # INTERNAL. Merge summary, save it, and fire the callback.
@@ -127,15 +101,15 @@ Collection.prototype.insert = (object, callback) ->
 	if Object::toString.call(object) isnt '[object Array]'
 		object = [object]
 
-	@getSummaryOptions (err, options) =>
-		track = options.track_collection @name, options
-		complete = 0
-		for obj in object
-			@_insert obj, (err, data) =>
-				update_summary err, data
-				summary._length++
-				if ++complete is object.length
-					@_merge_summarys err, data, callback, {}, summary
+	options = @getSummaryOptions()
+	track = options.track_collection @name, options
+	complete = 0
+	for obj in object
+		@_insert obj, (err, data) =>
+			update_summary err, data
+			summary._length++
+			if ++complete is object.length
+				@_merge_summarys err, data, callback, {}, summary
 
 Collection.prototype._update = Collection.prototype.update
 Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
@@ -189,36 +163,35 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 				throw 'FULL UPDATE'
 			return Math.max a, b
 
+	options = @getSummaryOptions()
+	@find(criteria).toArray (err, _originals = []) =>
+		originals = {}
+		originals[o._id.toString()] = o for o in _originals
+		for_merge = []
+		complete = 0
+		for obj in object
+			opts =
+				criteria: criteria
+				update: obj
+				options: options
+				remove: false
+				new: true
+				upsert: !!upsert
 
-	@getSummaryOptions (err, options) =>
-		@find(criteria).toArray (err, _originals = []) =>
-			originals = {}
-			originals[o._id.toString()] = o for o in _originals
-			for_merge = []
-			complete = 0
-			for obj in object
-				opts =
-					criteria: criteria
-					update: obj
-					options: options
-					remove: false
-					new: true
-					upsert: !!upsert
-
-				@findAndModify opts, (err, data) =>
-					if not err and data
-						subtract_summary err, originals[data._id.toString()]
-						if not err
-							for_merge.push data
-						if ++complete is object.length
-							try
-								update_summary null, data for data in for_merge
-								@_merge_summarys err, data, callback, merge_opts, summary
-							catch e
-								if e is 'FULL UPDATE'
-									@updateSummary callback
-								else
-									throw e
+			@findAndModify opts, (err, data) =>
+				if not err and data
+					subtract_summary err, originals[data._id.toString()]
+					if not err
+						for_merge.push data
+					if ++complete is object.length
+						try
+							update_summary null, data for data in for_merge
+							@_merge_summarys err, data, callback, merge_opts, summary
+						catch e
+							if e is 'FULL UPDATE'
+								@updateSummary callback
+							else
+								throw e
 
 Collection.prototype._remove = Collection.prototype.remove
 Collection.prototype.remove = (criteria, callback) ->
@@ -248,20 +221,20 @@ Collection.prototype.remove = (criteria, callback) ->
 				throw 'FULL UPDATE'
 			return Math.max a, b
 
-	@getSummaryOptions (err, options) =>
-		@find(criteria).toArray (err, data) =>
-			data = data or []
-			for row in data
-				summary._length--
-				subtract_summary err, row
-			try
-				@_merge_summarys err, data, (() -> null), merge_opts, summary
-				@_remove criteria, callback
-			catch e
-				if e is 'FULL UPDATE'
-					@updateSummary callback
-				else
-					throw e
+	options = @getSummaryOptions()
+	@find(criteria).toArray (err, data) =>
+		data = data or []
+		for row in data
+			summary._length--
+			subtract_summary err, row
+		try
+			@_merge_summarys err, data, (() -> null), merge_opts, summary
+			@_remove criteria, callback
+		catch e
+			if e is 'FULL UPDATE'
+				@updateSummary callback
+			else
+				throw e
 
 
 Collection.prototype._get_summary = (object) ->
@@ -295,7 +268,8 @@ Collection.prototype._walk_objects = (first, second = {}, options, fn) ->
 	keys = (k for k,v of first)
 	(keys.push k for k,v of second when k not in keys)
 
-	for key in keys when @_summaryOptions.track_column key, @_summaryOptions
+	sopts = @getSummaryOptions()
+	for key in keys when sopts.track_column key, sopts
 		v1 = first[key]
 		v2 = second[key]
 		type = (o) -> (o? and o.constructor and o.constructor.name) or 'Null'
@@ -305,7 +279,7 @@ Collection.prototype._walk_objects = (first, second = {}, options, fn) ->
 		else
 			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
 
-	for key, val of first when not @_summaryOptions.track_column key, @_summaryOptions
+	for key, val of first when not sopts.track_column key, sopts
 		delete first[key]
 
 	return first
