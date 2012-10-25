@@ -14,12 +14,11 @@
   Server.prototype.summaryOptions = {
     ignored_columns: ['_id'],
     track_column: function(column, options) {
-      return __indexOf.call(options.ignored_columns, column) < 0;
+      return true;
     },
     ignored_collections: [],
     track_collection: function(collection, options) {
-      var _ref;
-      return _ref = !collection, __indexOf.call(options.ignored_collections, _ref) >= 0;
+      return true;
     }
   };
 

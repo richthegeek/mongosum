@@ -6,9 +6,9 @@ collection_name = '_summaries'
 
 Server.prototype.summaryOptions =
 	ignored_columns: ['_id'],
-	track_column: (column, options) -> return column not in options.ignored_columns
+	track_column: (column, options) -> return true
 	ignored_collections: [],
-	track_collection: (collection, options) -> return not collection in options.ignored_collections
+	track_collection: (collection, options) -> return true
 
 Server.prototype.getSummaryOptions = () ->
 	@summaryOptions
