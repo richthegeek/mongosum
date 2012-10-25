@@ -36,6 +36,8 @@
         opts[k] = v;
       }
     }
+    console.log(opts);
+    throw 'nope';
     if (write) {
       this._defaultSummaryOptions = opts;
     }
@@ -66,8 +68,8 @@
     var _this = this;
     if (!this._summaryOptions) {
       return this.getSummary(function(err, summary) {
-        summary._options = _this.defaultSummaryOptions(summary._options || {}, false);
-        return callback(_this._summaryOptions = summary._options);
+        _this._summaryOptions = summary._options = _this.defaultSummaryOptions(summary._options || {}, true);
+        return callback(summary._options);
       });
     } else {
       return callback(this._summaryOptions);

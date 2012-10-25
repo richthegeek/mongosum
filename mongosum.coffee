@@ -15,6 +15,9 @@ Server.prototype.defaultSummaryOptions = (opts, write = true) ->
 	opts = opts or {}
 	opts[k] ?= v for k,v of (@_defaultSummaryOptions or {})
 
+	console.log opts
+	throw 'nope'
+
 	if write
 		@_defaultSummaryOptions = opts
 
@@ -39,8 +42,8 @@ DB.prototype.collection = (name) ->
 Collection.prototype.getSummaryOptions = (callback) ->
 	if not @_summaryOptions
 		@getSummary (err, summary) =>
-			summary._options = @defaultSummaryOptions summary._options or {}, false
-			callback @_summaryOptions = summary._options
+			@_summaryOptions = summary._options = @defaultSummaryOptions summary._options or {}, true
+			callback summary._options
 	else
 		callback @_summaryOptions
 
