@@ -37,7 +37,11 @@
       }
     }
     console.log(opts, this._defaultSummaryOptions);
-    throw 'nope';
+    try {
+      a.b.c = 'foo';
+    } catch (e) {
+      console.log(e.stack);
+    }
     if (write) {
       this._defaultSummaryOptions = opts;
     }

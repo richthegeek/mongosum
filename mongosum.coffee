@@ -16,7 +16,10 @@ Server.prototype.defaultSummaryOptions = (opts, write = true) ->
 	opts[k] ?= v for k,v of @_defaultSummaryOptions
 
 	console.log opts, @_defaultSummaryOptions
-	throw 'nope'
+	try
+		a.b.c = 'foo'
+	catch e
+		console.log e.stack
 
 	if write
 		@_defaultSummaryOptions = opts
