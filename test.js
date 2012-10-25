@@ -15,11 +15,11 @@
   coll.insert({
     a: 'bob',
     b: 12
-  });
-
-  coll.insert({
-    a: 'alice',
-    b: 42
+  }, function() {
+    return coll.insert({
+      a: 'alice',
+      b: 42
+    });
   });
 
 }).call(this);
