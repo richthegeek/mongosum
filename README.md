@@ -33,6 +33,8 @@ db.defaultSummaryOptions(options) // writes to global default
 coll.defaultSummaryOptions(options) // writes to global default
 ```
 
+*All callbacks follow standard node practice of recieving an (err, result) pairs*
+
 ## Tracked information
 At the collection level, the summary tracks:
 
