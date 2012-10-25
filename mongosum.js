@@ -144,10 +144,11 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var complete, obj, options, summary, update_summary, _i, _len, _ref, _results,
+    var complete, obj, options, summary, update_summary, _i, _len, _ref, _ref1, _results,
       _this = this;
     options = this.getSummaryOptions();
-    if ((this.name === collection_name) || (_ref = this.name, __indexOf.call(options.ignored_collections, _ref) >= 0) || (!options.track_collection(this.name, options))) {
+    console.log(this.name, this.name === collection_name, (_ref = this.name, __indexOf.call(options.ignored_collections, _ref) >= 0), !options.track_collection(this.name, options));
+    if ((this.name === collection_name) || (_ref1 = this.name, __indexOf.call(options.ignored_collections, _ref1) >= 0) || (!options.track_collection(this.name, options))) {
       return Collection.prototype._insert.apply(this, arguments);
     }
     summary = {

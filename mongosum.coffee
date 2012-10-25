@@ -87,6 +87,9 @@ Collection.prototype.drop = () ->
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
 	options = @getSummaryOptions()
+
+	console.log @name, @name is collection_name, (@name in options.ignored_collections), (not options.track_collection @name, options)
+
 	if (@name is collection_name) or (@name in options.ignored_collections) or (not options.track_collection @name, options)
 		return Collection.prototype._insert.apply this, arguments
 
