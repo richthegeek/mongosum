@@ -143,11 +143,10 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var complete, obj, options, summary, update_summary, _i, _len, _ref, _ref1, _results,
+    var complete, obj, options, summary, update_summary, _i, _len, _ref, _results,
       _this = this;
     options = this.getSummaryOptions();
-    console.log(this.name, this.name === collection_name, (_ref = this.name, __indexOf.call(options.ignored_collections, _ref) >= 0), !options.track_collection(this.name, options));
-    if ((this.name === collection_name) || (_ref1 = this.name, __indexOf.call(options.ignored_collections, _ref1) >= 0) || (!options.track_collection(this.name, options))) {
+    if ((this.name === collection_name) || (_ref = this.name, __indexOf.call(options.ignored_collections, _ref) >= 0) || (!options.track_collection(this.name, options))) {
       return Collection.prototype._insert.apply(this, arguments);
     }
     summary = {
@@ -179,9 +178,10 @@
   Collection.prototype._update = Collection.prototype.update;
 
   Collection.prototype.update = function(criteria, object, upsert, multi, callback) {
-    var merge_opts, options, subtract_summary, summary, update_summary,
+    var merge_opts, options, subtract_summary, summary, update_summary, _ref,
       _this = this;
-    if (this.name === collection_name) {
+    options = this.getSummaryOptions();
+    if ((this.name === collection_name) || (_ref = this.name, __indexOf.call(options.ignored_collections, _ref) >= 0) || (!options.track_collection(this.name, options))) {
       return Collection.prototype._update.apply(this, arguments);
     }
     if (!callback && typeof multi === 'function') {
@@ -243,7 +243,6 @@
         return Math.max(a, b);
       }
     };
-    options = this.getSummaryOptions();
     return this.find(criteria).toArray(function(err, _originals) {
       var complete, for_merge, o, obj, opts, originals, _i, _j, _len, _len1, _results;
       if (_originals == null) {
@@ -299,10 +298,11 @@
   Collection.prototype._remove = Collection.prototype.remove;
 
   Collection.prototype.remove = function(criteria, callback) {
-    var merge_opts, options, subtract_summary, summary,
+    var merge_opts, options, subtract_summary, summary, _ref,
       _this = this;
-    if (this.name === collection_name) {
-      return Collection.prototype._update.apply(this, arguments);
+    options = this.getSummaryOptions();
+    if ((this.name === collection_name) || (_ref = this.name, __indexOf.call(options.ignored_collections, _ref) >= 0) || (!options.track_collection(this.name, options))) {
+      return Collection.prototype._remove.apply(this, arguments);
     }
     if (!callback && typeof criteria === 'function') {
       callback = criteria;
@@ -340,7 +340,6 @@
         return Math.max(a, b);
       }
     };
-    options = this.getSummaryOptions();
     return this.find(criteria).toArray(function(err, data) {
       var row, _i, _len;
       data = data || [];
