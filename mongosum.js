@@ -26,7 +26,7 @@
   Server.prototype.defaultSummaryOptions = function(opts, write) {
     var k, v, _ref, _ref1;
     if (write == null) {
-      write = true;
+      write = false;
     }
     opts = opts || {};
     _ref = this._defaultSummaryOptions;
@@ -79,7 +79,7 @@
     return this.getSummary(function(err, summary) {
       delete summary._options.track_column;
       delete summary._options.track_collection;
-      summary._options = options;
+      summary._options = _this.defaultSummaryOptions(options);
       return _this.setSummary(summary, callback);
     });
   };
@@ -209,7 +209,7 @@
     }
     return this.getSummaryOptions(function(err, options) {
       var complete, obj, track, _i, _len, _results;
-      track = _this._summaryOptions.track_collection(_this.name, _this._summaryOptions);
+      track = options.track_collection(_this.name, options);
       complete = 0;
       _results = [];
       for (_i = 0, _len = object.length; _i < _len; _i++) {

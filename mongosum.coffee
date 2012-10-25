@@ -11,7 +11,7 @@ Server.prototype._defaultSummaryOptions =
 	track_collection: (collection, options) -> return not collection in options.ignored_collections
 
 
-Server.prototype.defaultSummaryOptions = (opts, write = true) ->
+Server.prototype.defaultSummaryOptions = (opts, write = false) ->
 	opts = opts or {}
 	opts[k] ?= v for k,v of @_defaultSummaryOptions
 
@@ -48,7 +48,7 @@ Collection.prototype.setSummaryOptions = (options, callback) ->
 	@getSummary (err, summary) =>
 		delete summary._options.track_column
 		delete summary._options.track_collection
-		summary._options = options
+		summary._options = @defaultSummaryOptions options
 		@setSummary summary, callback
 
 ###
@@ -128,7 +128,7 @@ Collection.prototype.insert = (object, callback) ->
 		object = [object]
 
 	@getSummaryOptions (err, options) =>
-		track = @_summaryOptions.track_collection @name, @_summaryOptions
+		track = options.track_collection @name, options
 		complete = 0
 		for obj in object
 			@_insert obj, (err, data) =>
