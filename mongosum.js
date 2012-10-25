@@ -36,7 +36,7 @@
         opts[k] = v;
       }
     }
-    console.log(opts);
+    console.log(opts, this._defaultSummaryOptions);
     throw 'nope';
     if (write) {
       this._defaultSummaryOptions = opts;
