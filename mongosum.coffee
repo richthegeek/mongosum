@@ -12,10 +12,12 @@ Server.prototype._defaultSummaryOptions =
 
 
 Server.prototype.defaultSummaryOptions = (opts, write = true) ->
-	opts = opts or {}
-	opts[k] ?= v for k,v of (@_defaultSummaryOptions or {})
+	defs = (@_defaultSummaryOptions or Server::_defaultSummaryOptions)
 
-	console.log opts, @_defaultSummaryOptions
+	opts = opts or {}
+	opts[k] ?= v for k,v of defs
+
+	console.log opts, defs
 	throw 'nope'
 
 	if write
@@ -23,10 +25,10 @@ Server.prototype.defaultSummaryOptions = (opts, write = true) ->
 
 	return opts
 
-DB.prototype.defaultSummaryOptions = () ->
-	@server.defaultSummaryOptions.apply this, arguments
-Collection.prototype.defaultSummaryOptions = () ->
-	@db.server.defaultSummaryOptions.apply this, arguments
+DB.prototype.defaultSummaryOptions = (a,b) ->
+	@server.defaultSummaryOptions(a,b)
+Collection.prototype.defaultSummaryOptions = (a,b) ->
+	@db.server.defaultSummaryOptions(a,b)
 
 
 Server.prototype.db = (name) ->

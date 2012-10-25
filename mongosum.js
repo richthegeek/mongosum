@@ -24,19 +24,19 @@
   };
 
   Server.prototype.defaultSummaryOptions = function(opts, write) {
-    var k, v, _ref, _ref1;
+    var defs, k, v, _ref;
     if (write == null) {
       write = true;
     }
+    defs = this._defaultSummaryOptions || Server.prototype._defaultSummaryOptions;
     opts = opts || {};
-    _ref = this._defaultSummaryOptions || {};
-    for (k in _ref) {
-      v = _ref[k];
-      if ((_ref1 = opts[k]) == null) {
+    for (k in defs) {
+      v = defs[k];
+      if ((_ref = opts[k]) == null) {
         opts[k] = v;
       }
     }
-    console.log(opts, this._defaultSummaryOptions);
+    console.log(opts, defs);
     throw 'nope';
     if (write) {
       this._defaultSummaryOptions = opts;
@@ -44,12 +44,12 @@
     return opts;
   };
 
-  DB.prototype.defaultSummaryOptions = function() {
-    return this.server.defaultSummaryOptions.apply(this, arguments);
+  DB.prototype.defaultSummaryOptions = function(a, b) {
+    return this.server.defaultSummaryOptions(a, b);
   };
 
-  Collection.prototype.defaultSummaryOptions = function() {
-    return this.db.server.defaultSummaryOptions.apply(this, arguments);
+  Collection.prototype.defaultSummaryOptions = function(a, b) {
+    return this.db.server.defaultSummaryOptions(a, b);
   };
 
   Server.prototype.db = function(name) {
