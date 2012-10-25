@@ -40,9 +40,9 @@ Collection.prototype.getSummaryOptions = (callback) ->
 	if not @_summaryOptions
 		@getSummary (err, summary) =>
 			@_summaryOptions = summary._options = @defaultSummaryOptions summary._options or {}, true
-			callback summary._options
+			callback err, summary._options
 	else
-		callback @_summaryOptions
+		callback null, @_summaryOptions
 
 Collection.prototype.setSummaryOptions = (options, callback) ->
 	@getSummary (err, summary) =>
@@ -84,7 +84,7 @@ Collection.prototype.setSummary = (summary, callback) ->
 # Do a full-table update of the summary. This is expensive.
 ###
 Collection.prototype.rebuildSummary = (callback) ->
-	@getSummaryOptions (options) =>
+	@getSummaryOptions (err, options) =>
 		summary =
 			_collection: @name
 			_options: options
@@ -126,7 +126,7 @@ Collection.prototype.insert = (object, callback) ->
 	if Object::toString.call(object) isnt '[object Array]'
 		object = [object]
 
-	@getSummaryOptions () =>
+	@getSummaryOptions (err, options) =>
 		track = @_summaryOptions.track_collection @name, @_summaryOptions
 		complete = 0
 		for obj in object
@@ -189,7 +189,7 @@ Collection.prototype.update = (criteria, object, upsert, multi, callback) ->
 			return Math.max a, b
 
 
-	@getSummaryOptions () =>
+	@getSummaryOptions (err, options) =>
 		@find(criteria).toArray (err, _originals = []) =>
 			originals = {}
 			originals[o._id.toString()] = o for o in _originals
@@ -247,7 +247,7 @@ Collection.prototype.remove = (criteria, callback) ->
 				throw 'FULL UPDATE'
 			return Math.max a, b
 
-	@getSummaryOptions () =>
+	@getSummaryOptions (err, options) =>
 		@find(criteria).toArray (err, data) =>
 			data = data or []
 			for row in data

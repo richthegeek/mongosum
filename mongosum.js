@@ -67,10 +67,10 @@
     if (!this._summaryOptions) {
       return this.getSummary(function(err, summary) {
         _this._summaryOptions = summary._options = _this.defaultSummaryOptions(summary._options || {}, true);
-        return callback(summary._options);
+        return callback(err, summary._options);
       });
     } else {
-      return callback(this._summaryOptions);
+      return callback(null, this._summaryOptions);
     }
   };
 
@@ -144,7 +144,7 @@
 
   Collection.prototype.rebuildSummary = function(callback) {
     var _this = this;
-    return this.getSummaryOptions(function(options) {
+    return this.getSummaryOptions(function(err, options) {
       var each, summary;
       summary = {
         _collection: _this.name,
@@ -205,7 +205,7 @@
     if (Object.prototype.toString.call(object) !== '[object Array]') {
       object = [object];
     }
-    return this.getSummaryOptions(function() {
+    return this.getSummaryOptions(function(err, options) {
       var complete, obj, track, _i, _len, _results;
       track = _this._summaryOptions.track_collection(_this.name, _this._summaryOptions);
       complete = 0;
@@ -291,7 +291,7 @@
         return Math.max(a, b);
       }
     };
-    return this.getSummaryOptions(function() {
+    return this.getSummaryOptions(function(err, options) {
       return _this.find(criteria).toArray(function(err, _originals) {
         var complete, for_merge, o, obj, opts, originals, _i, _j, _len, _len1, _results;
         if (_originals == null) {
@@ -390,7 +390,7 @@
         return Math.max(a, b);
       }
     };
-    return this.getSummaryOptions(function() {
+    return this.getSummaryOptions(function(err, options) {
       return _this.find(criteria).toArray(function(err, data) {
         var row, _i, _len;
         data = data || [];

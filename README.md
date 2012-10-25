@@ -27,6 +27,7 @@ coll.setSummaryOptions(options, callback)
 
 // Alter the default summary options - if the collection does not have explicit options, it will use these.
 // This is not written to the database, it must be refreshed on each instance.
+dbms._defaultSummaryOptions // the object that stores these defaults, can be read/written directly
 dbms.defaultSummaryOptions(options)
 db.defaultSummaryOptions(options) // writes to global default
 coll.defaultSummaryOptions(options) // writes to global default
