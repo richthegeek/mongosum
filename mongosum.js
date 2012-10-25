@@ -16,7 +16,7 @@
     track_column: function(column, options) {
       return true;
     },
-    ignored_collections: [],
+    ignored_collections: ['system.indexes'],
     track_collection: function(collection, options) {
       return true;
     }

@@ -7,7 +7,7 @@ collection_name = '_summaries'
 Server.prototype.summaryOptions =
 	ignored_columns: ['_id'],
 	track_column: (column, options) -> return true
-	ignored_collections: [],
+	ignored_collections: ['system.indexes'],
 	track_collection: (collection, options) -> return true
 
 Server.prototype.getSummaryOptions = () ->

@@ -16,20 +16,17 @@ coll.insert {name: 'Richard', age: 23}
 ## New commands
 ```javascript
 // Get the summary of a collection
-coll.getSummary(callback)
+coll.getSummary(callback(err, summary))
 
 
 // Force a full refresh of the summary (this is a heavy operation, do it rarely)
-coll.rebuildSummary(callback)
+coll.rebuildSummary(callback(err, summary))
 
 // Set the options for summarisation. These options are global to the Mongosum instance.
 server.summaryOptions = {
-	ignored_columns: ['_id', 'password'],
-	track_column: (name, val) ->
+	(see below)
 }
 ```
-
-*All callbacks follow standard node practice of recieving an (err, result) pairs*
 
 ## Tracked information
 At the collection level, the summary tracks:
@@ -47,7 +44,7 @@ On a column level, depending on type:
  	- max: the maximum value in this property.
 
 ## Options
-Options can be set per-instance with coll.defaultSummaryOptions(options) or persisted with coll.setSummaryOptions(options).
+Options are set globally on the Server.summaryOptions property.
 
 The options should be an object with the following optional properties:
 
