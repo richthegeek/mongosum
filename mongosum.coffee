@@ -86,7 +86,8 @@ Collection.prototype.drop = () ->
 
 Collection.prototype._insert = Collection.prototype.insert
 Collection.prototype.insert = (object, callback) ->
-	if @name is collection_name
+	options = @getSummaryOptions()
+	if (@name is collection_name) or (@name in options.ignored_collections) or (not options.track_collection @name, options)
 		return Collection.prototype._insert.apply this, arguments
 
 	summary = _length: 0
@@ -97,8 +98,6 @@ Collection.prototype.insert = (object, callback) ->
 	if Object::toString.call(object) isnt '[object Array]'
 		object = [object]
 
-	options = @getSummaryOptions()
-	track = options.track_collection @name, options
 	complete = 0
 	for obj in object
 		@_insert obj, (err, data) =>
@@ -264,7 +263,7 @@ Collection.prototype._walk_objects = (first, second = {}, options, fn) ->
 	(keys.push k for k,v of second when k not in keys)
 
 	sopts = @getSummaryOptions()
-	for key in keys when sopts.track_column key, sopts
+	for key in keys when (key not in sopts.ignored_columns) or sopts.track_column key, sopts
 		v1 = first[key]
 		v2 = second[key]
 		type = (o) -> (o? and o.constructor and o.constructor.name) or 'Null'
@@ -274,7 +273,7 @@ Collection.prototype._walk_objects = (first, second = {}, options, fn) ->
 		else
 			first[key] = fn key, [v1, v2], [type(v1), type(v2)]
 
-	for key, val of first when not sopts.track_column key, sopts
+	for key, val of first when key in sopts.ignored_columns or not sopts.track_column key, sopts
 		delete first[key]
 
 	return first

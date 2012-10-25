@@ -22,15 +22,11 @@ coll.getSummary(callback)
 // Force a full refresh of the summary (this is a heavy operation, do it rarely)
 coll.rebuildSummary(callback)
 
-// Set the options on the summariser. Allows a specific "ignored_columns" on the collection
-coll.setSummaryOptions(options, callback)
-
-// Alter the default summary options - if the collection does not have explicit options, it will use these.
-// This is not written to the database, it must be refreshed on each instance.
-dbms._defaultSummaryOptions // the object that stores these defaults, can be read/written directly
-dbms.defaultSummaryOptions(options)
-db.defaultSummaryOptions(options) // writes to global default
-coll.defaultSummaryOptions(options) // writes to global default
+// Set the options for summarisation. These options are global to the Mongosum instance.
+server.summaryOptions = {
+	ignored_columns: ['_id', 'password'],
+	track_column: (name, val) ->
+}
 ```
 
 *All callbacks follow standard node practice of recieving an (err, result) pairs*

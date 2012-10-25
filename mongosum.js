@@ -144,9 +144,10 @@
   Collection.prototype._insert = Collection.prototype.insert;
 
   Collection.prototype.insert = function(object, callback) {
-    var complete, obj, options, summary, track, update_summary, _i, _len, _results,
+    var complete, obj, options, summary, update_summary, _i, _len, _ref, _results,
       _this = this;
-    if (this.name === collection_name) {
+    options = this.getSummaryOptions();
+    if ((this.name === collection_name) || (_ref = this.name, __indexOf.call(options.ignored_collections, _ref) >= 0) || (!options.track_collection(this.name, options))) {
       return Collection.prototype._insert.apply(this, arguments);
     }
     summary = {
@@ -160,8 +161,6 @@
     if (Object.prototype.toString.call(object) !== '[object Array]') {
       object = [object];
     }
-    options = this.getSummaryOptions();
-    track = options.track_collection(this.name, options);
     complete = 0;
     _results = [];
     for (_i = 0, _len = object.length; _i < _len; _i++) {
@@ -436,7 +435,7 @@
     sopts = this.getSummaryOptions();
     for (_i = 0, _len = keys.length; _i < _len; _i++) {
       key = keys[_i];
-      if (!(sopts.track_column(key, sopts))) {
+      if (!((__indexOf.call(sopts.ignored_columns, key) < 0) || sopts.track_column(key, sopts))) {
         continue;
       }
       v1 = first[key];
@@ -452,7 +451,7 @@
     }
     for (key in first) {
       val = first[key];
-      if (!sopts.track_column(key, sopts)) {
+      if (__indexOf.call(sopts.ignored_columns, key) >= 0 || !sopts.track_column(key, sopts)) {
         delete first[key];
       }
     }
