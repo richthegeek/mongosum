@@ -66,8 +66,8 @@
     var _this = this;
     if (!this._summaryOptions) {
       return this.getSummary(function(err, summary) {
-        _this._summaryOptions = summary._options = _this.defaultSummaryOptions(summary._options || {}, true);
-        return callback(err, summary._options);
+        _this._summaryOptions = summary._options = _this.defaultSummaryOptions(summary._options);
+        return callback(err, _this._summaryOptions);
       });
     } else {
       return callback(null, this._summaryOptions);

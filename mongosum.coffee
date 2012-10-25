@@ -39,8 +39,8 @@ DB.prototype.collection = (name) ->
 Collection.prototype.getSummaryOptions = (callback) ->
 	if not @_summaryOptions
 		@getSummary (err, summary) =>
-			@_summaryOptions = summary._options = @defaultSummaryOptions summary._options or {}, true
-			callback err, summary._options
+			@_summaryOptions = summary._options = @defaultSummaryOptions summary._options
+			callback err, @_summaryOptions
 	else
 		callback null, @_summaryOptions
 
