@@ -15,12 +15,6 @@ Server.prototype.defaultSummaryOptions = (opts, write = true) ->
 	opts = opts or {}
 	opts[k] ?= v for k,v of @_defaultSummaryOptions
 
-	console.log opts, @_defaultSummaryOptions
-	try
-		a.b.c = 'foo'
-	catch e
-		console.log e.stack
-
 	if write
 		@_defaultSummaryOptions = opts
 

@@ -36,12 +36,6 @@
         opts[k] = v;
       }
     }
-    console.log(opts, this._defaultSummaryOptions);
-    try {
-      a.b.c = 'foo';
-    } catch (e) {
-      console.log(e.stack);
-    }
     if (write) {
       this._defaultSummaryOptions = opts;
     }
