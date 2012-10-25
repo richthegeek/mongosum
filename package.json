@@ -1,7 +1,7 @@
 {
 	"name": "mongosum",
 	"description": "Maintains summary tables on Mongo collections, on top of Mongolian",
-	"version": "0.3.3",
+	"version": "0.3.4",
 	"homepage": "https://github.com/richthegeek/mongosum",
 	"repository": "git@github.com:richthegeek/mongosum.git",
 	"author": "Livelink New Media <support@ltl.uk.com>",

@@ -76,8 +76,9 @@ Collection.prototype.setSummary = (summary, callback) ->
 	criteria = _collection: @name
 	summary._collection = @name
 	summary._updated = +new Date
-	delete summary._options.track_column
-	delete summary._options.track_collection
+	if summary._options
+		delete summary._options.track_column
+		delete summary._options.track_collection
 	@db.summary.update criteria, summary, true, callback
 
 ###

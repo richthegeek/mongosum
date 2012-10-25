@@ -132,8 +132,10 @@
     };
     summary._collection = this.name;
     summary._updated = +(new Date);
-    delete summary._options.track_column;
-    delete summary._options.track_collection;
+    if (summary._options) {
+      delete summary._options.track_column;
+      delete summary._options.track_collection;
+    }
     return this.db.summary.update(criteria, summary, true, callback);
   };
 
