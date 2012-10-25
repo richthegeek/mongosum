@@ -15,7 +15,7 @@ Server.prototype.defaultSummaryOptions = (opts, write = true) ->
 	opts = opts or {}
 	opts[k] ?= v for k,v of @_defaultSummaryOptions
 
-	console.log opts, defs
+	console.log opts, @_defaultSummaryOptions
 	throw 'nope'
 
 	if write
