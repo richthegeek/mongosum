@@ -4,16 +4,21 @@ Collection = require 'mongolian/lib/collection.js'
 
 collection_name = '_summaries'
 
-Server.prototype.defaultSummaryOptions = (opts) ->
-	@_defaultSummaryOptions = opts or @_defaultSummaryOptions or {}
+Server.prototype._defaultSummaryOptions =
+	ignored_columns: ['_id'],
+	track_column: (column, options) -> return column not in options.ignored_columns
+	ignored_collections: [],
+	track_collection: (collection, options) -> return not collection in options.ignored_collections
 
-	@_defaultSummaryOptions.ignored_columns ?= ['_id']
-	@_defaultSummaryOptions.track_column ?= (column, options) -> return column not in options.ignored_columns
 
-	@_defaultSummaryOptions.ignored_collections ?= []
-	@_defaultSummaryOptions.track_collection ?= (collection, options) -> return not collection in options.ignored_collections
+Server.prototype.defaultSummaryOptions = (opts, write = true) ->
+	opts = opts or {}
+	opts[k] ?= v for k,v of (@_defaultSummaryOptions or {})
 
-	return @_defaultSummaryOptions
+	if write
+		@_defaultSummaryOptions = opts
+
+	return opts
 
 DB.prototype.defaultSummaryOptions = () ->
 	@server.defaultSummaryOptions.apply this, arguments
@@ -34,7 +39,7 @@ DB.prototype.collection = (name) ->
 Collection.prototype.getSummaryOptions = (callback) ->
 	if not @_summaryOptions
 		@getSummary (err, summary) =>
-			summary._options = @defaultSummaryOptions summary._options or {}
+			summary._options = @defaultSummaryOptions summary._options or {}, false
 			callback @_summaryOptions = summary._options
 	else
 		callback @_summaryOptions
@@ -56,9 +61,9 @@ Collection.prototype.getSummary = (callback) ->
 	criteria = _collection: @name
 	@db.summary.find(criteria).next (err, summary = {}) =>
 		summary._collection ?= @name
-		summary._options ?= @defaultSummaryOptions()
+		summary._options ?= {}
 		summary._length ?= 0
-		@_summaryOptions = summary._options
+		@_summaryOptions = @defaultSummaryOptions summary._options
 		callback err, summary
 
 ###
@@ -276,7 +281,7 @@ Collection.prototype._merge_summary = (left, right, options = {}) ->
 		if not vals[0] and vals[1]
 			vals[0] = JSON.parse JSON.stringify vals[1]
 			if vals[1].sum then vals[1].sum = null
-		if vals[0]? and vals[0].type
+		if vals[0] and vals[0].type and vals[1] and vals[1].type
 			if vals[0].type is 'Number' and vals[1].type is 'Number'
 				vals[0].min = options.min vals[0].min, vals[1].min
 				vals[0].max = options.max vals[0].max, vals[1].max

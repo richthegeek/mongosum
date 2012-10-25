@@ -11,27 +11,35 @@
 
   collection_name = '_summaries';
 
-  Server.prototype.defaultSummaryOptions = function(opts) {
-    var _base, _base1, _base2, _base3, _ref, _ref1, _ref2, _ref3;
-    this._defaultSummaryOptions = opts || this._defaultSummaryOptions || {};
-    if ((_ref = (_base = this._defaultSummaryOptions).ignored_columns) == null) {
-      _base.ignored_columns = ['_id'];
+  Server.prototype._defaultSummaryOptions = {
+    ignored_columns: ['_id'],
+    track_column: function(column, options) {
+      return __indexOf.call(options.ignored_columns, column) < 0;
+    },
+    ignored_collections: [],
+    track_collection: function(collection, options) {
+      var _ref;
+      return _ref = !collection, __indexOf.call(options.ignored_collections, _ref) >= 0;
     }
-    if ((_ref1 = (_base1 = this._defaultSummaryOptions).track_column) == null) {
-      _base1.track_column = function(column, options) {
-        return __indexOf.call(options.ignored_columns, column) < 0;
-      };
+  };
+
+  Server.prototype.defaultSummaryOptions = function(opts, write) {
+    var k, v, _ref, _ref1;
+    if (write == null) {
+      write = true;
     }
-    if ((_ref2 = (_base2 = this._defaultSummaryOptions).ignored_collections) == null) {
-      _base2.ignored_collections = [];
+    opts = opts || {};
+    _ref = this._defaultSummaryOptions || {};
+    for (k in _ref) {
+      v = _ref[k];
+      if ((_ref1 = opts[k]) == null) {
+        opts[k] = v;
+      }
     }
-    if ((_ref3 = (_base3 = this._defaultSummaryOptions).track_collection) == null) {
-      _base3.track_collection = function(collection, options) {
-        var _ref4;
-        return _ref4 = !collection, __indexOf.call(options.ignored_collections, _ref4) >= 0;
-      };
+    if (write) {
+      this._defaultSummaryOptions = opts;
     }
-    return this._defaultSummaryOptions;
+    return opts;
   };
 
   DB.prototype.defaultSummaryOptions = function() {
@@ -58,7 +66,7 @@
     var _this = this;
     if (!this._summaryOptions) {
       return this.getSummary(function(err, summary) {
-        summary._options = _this.defaultSummaryOptions(summary._options || {});
+        summary._options = _this.defaultSummaryOptions(summary._options || {}, false);
         return callback(_this._summaryOptions = summary._options);
       });
     } else {
@@ -99,12 +107,12 @@
         summary._collection = _this.name;
       }
       if ((_ref1 = summary._options) == null) {
-        summary._options = _this.defaultSummaryOptions();
+        summary._options = {};
       }
       if ((_ref2 = summary._length) == null) {
         summary._length = 0;
       }
-      _this._summaryOptions = summary._options;
+      _this._summaryOptions = _this.defaultSummaryOptions(summary._options);
       return callback(err, summary);
     });
   };
@@ -443,7 +451,7 @@
           vals[1].sum = null;
         }
       }
-      if ((vals[0] != null) && vals[0].type) {
+      if (vals[0] && vals[0].type && vals[1] && vals[1].type) {
         if (vals[0].type === 'Number' && vals[1].type === 'Number') {
           vals[0].min = options.min(vals[0].min, vals[1].min);
           vals[0].max = options.max(vals[0].max, vals[1].max);
